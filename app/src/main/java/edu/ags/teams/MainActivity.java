@@ -4,9 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 
 import java.util.ArrayList;
 
@@ -31,6 +33,26 @@ public class MainActivity extends AppCompatActivity {
         teams.add(new Team(4,"Bears","Chicago", R.drawable.bears));
 
         Log.d(TAG, "onCreate: ");
+
+        initListButton();
+       // initMapButton();
+       // initSettingsButton();
+
+
+    }
+
+    private void initListButton() {
+        ImageButton ibList = findViewById(R.id.imageButtonList);
+
+        ibList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //Show the list activity
+                Intent intent = new Intent(MainActivity.this, TeamListActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+        });
     }
 
     private View.OnClickListener onItemClickListener = new View.OnClickListener() {
