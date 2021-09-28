@@ -10,15 +10,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Teams">
         <activity
-            android:name=".TeamListActivity"
-            android:exported="true" />
-        <activity
-            android:name=".TeamMapActivity"
-            android:exported="true" />
-        <activity
-            android:name=".TeamSettingsActivity"
-            android:exported="true" />
-        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
