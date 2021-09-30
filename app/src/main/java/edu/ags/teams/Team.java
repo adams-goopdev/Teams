@@ -14,4 +14,10 @@ public class Team {
         City = city;
         ImgId = imgId;
     }
+
+    public String toString()
+    {
+        return Id + "|" + Description + "|" + City + "|" + ImgId;
+    }
+
 }

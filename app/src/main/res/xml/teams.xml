@@ -1,0 +1,6 @@
+<teams>
+    <team id="1" description="Packers" city="Green Bay" imgid="2131165331"></team>
+    <team id="2" description="Vikings" city="Minnesota" imgid="2131165337"></team>
+    <team id="3" description="Lions" city="Detroit" imgid="2131165296"></team>
+    <team id="4" description="Bears" city="Chicago" imgid="2131165272"></team>
+</teams>
