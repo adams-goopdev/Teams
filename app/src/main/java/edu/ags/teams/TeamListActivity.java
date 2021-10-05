@@ -98,7 +98,12 @@ public class TeamListActivity extends AppCompatActivity {
         for(String s : strData)
         {
             data = s.split("\\|");
-            teams.add(new Team(Integer.parseInt(data[0]),data[1],data[2], Integer.parseInt(data[3])));
+            teams.add(new Team(Integer.parseInt(data[0]),
+                    data[1],
+                    data[2],
+                    Integer.parseInt(data[3]),
+                    Float.parseFloat(data[4]),
+                    data[5]));
         }
     }
 

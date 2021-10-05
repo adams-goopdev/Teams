@@ -3,4 +3,14 @@
     <string name="teamlist">Display the list of Teams</string>
     <string name="teammap">Display the map</string>
     <string name="teamsettings">Display the Settings</string>
+    <string name="toggleButton">OFF</string>
+    <string name="save">SAVE</string>
+    <string name="description">Description</string>
+    <string name="enter_name">Enter Name</string>
+    <string name="name">Name</string>
+    <string name="city">City</string>
+    <string name="enter_city">Enter City</string>
+    <string name="rating">Rating</string>
+    <string name="Rate">Rate</string>
+    <string name="cell_phone">Cell Phone:</string>
 </resources>
