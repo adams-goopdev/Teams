@@ -7,10 +7,13 @@
     <string name="save">SAVE</string>
     <string name="description">Description</string>
     <string name="enter_name">Enter Name</string>
-    <string name="name">Name</string>
-    <string name="city">City</string>
+    <string name="name">Name:</string>
+    <string name="city">City:</string>
     <string name="enter_city">Enter City</string>
-    <string name="rating">Rating</string>
+    <string name="rating">Rating:</string>
     <string name="Rate">Rate</string>
     <string name="cell_phone">Cell Phone:</string>
+    <string name="enter_cell_number">Enter Cell Number</string>
+    <string name="delete">Delete:</string>
+    <string name="new1">New</string>
 </resources>

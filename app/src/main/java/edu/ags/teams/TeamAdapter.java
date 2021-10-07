@@ -73,7 +73,7 @@ public class TeamAdapter extends RecyclerView.Adapter {
 
 
         //Bind to the screen
-        teamViewHolder.getTextViewDescription().setText(team.Description);
+        teamViewHolder.getTextViewDescription().setText(team.Name);
         teamViewHolder.getTextViewCity().setText(team.City);
         teamViewHolder.getImageButtonPhoto().setImageResource(team.ImgId);
 

@@ -68,6 +68,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/name"
+                android:textSize="24dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
@@ -80,6 +81,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:hint="@string/enter_name"
+                android:textSize="24dp"
                 android:inputType="textPersonName"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/txtName">
@@ -93,6 +95,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:text="@string/city"
+                android:textSize="24dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/etName">
 
@@ -105,6 +108,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="16dp"
                 android:hint="@string/enter_city"
+                android:textSize="24dp"
                 android:inputType="textPersonName"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/txtCity">
@@ -119,8 +123,9 @@
                 android:layout_marginStart="4dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginTop="16dp"
+                android:textSize="24dp"
                 android:text="@string/cell_phone"
-                app:layout_constraintStart_toEndOf="@+id/etCity"
+                app:layout_constraintStart_toStartOf="@+id/etCity"
                 app:layout_constraintTop_toBottomOf="@+id/etCity" />
 
 
@@ -131,6 +136,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:ems="8"
+                android:textSize="24dp"
                 android:imeOptions="actionNext"
                 android:inputType="phone"
                 app:layout_constraintStart_toStartOf="@+id/textCell"

@@ -7,12 +7,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListAdapter;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -22,6 +26,8 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements RaterDialog.SaveRatingListener{
 
     public static final String TAG = "myDebug";
+    Team team;
+    ArrayList<Team> teams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +41,163 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
        initRatingButton();
        setForEditing(false);
        initToggleButton();
-
+       initTextChangedEvents();
+       initSaveButton();
+       
+       Bundle extras = getIntent().getExtras();
+       
+        ReadFromTextFile();
+       
+       
+       if(extras != null) {
+           //Edit existing team
+           Log.d(TAG, "onCreate: " + extras.getInt("teamId"));
+           initTeam(extras.getInt("teamId"));
+       }
+       else {
+           //Make a new one
+           team = new Team();
+           Log.d(TAG, "onCreate: new team");
+       }
         this.setTitle("Mainactivity");
+    }
+    
+    private void WriteToTextFile() {
+        FileIO fileIO = new FileIO();
+        Integer counter = 0;
+        String[] data = new String [teams.size()];
+        for (Team t : teams) data[counter++] = t.toString();
+        fileIO.writeFile(this,data);
+    }
+    
+    private void initSaveButton() {
+        Button btnSave = findViewById(R.id.btnSave);
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(team.getId() == -1)
+                {
+                    //new team
+                    team.Id = teams.get(teams.size() - 1).Id + 1;
+                    teams.add(team);
+                }
+                else
+                {
+                    //Update the team in the array
+                    Log.d(TAG, "onClick: "+ team.toString());
+                    teams.set(team.Id-1, team);
+                }
+
+                Log.d(TAG, "onClick: "+ teams.get(team.Id - 1).toString());
+               WriteToTextFile();
+                Log.d(TAG, "onClick: Wrote to File");
+            }
+        });
+    }
+
+    private void initTextChangedEvents() {
+        EditText editName = findViewById(R.id.etName);
+        EditText editCity = findViewById(R.id.etCity);
+        EditText editCellNumber = findViewById(R.id.editCell);
+
+        editName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                team.setName(editName.getText().toString());
+                Log.d(TAG, "afterTextChanged: Name");
+            }
+        });
+
+
+    editCity.addTextChangedListener(new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable editable) {
+            team.setCity(editCity.getText().toString());
+        }
+    });
+
+        editCellNumber.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                team.setCellNumber(editCellNumber.getText().toString());
+            }
+        });
+
+
+
+    }
+
+    private void initTeam(int teamId) {
+        team = teams.get(teamId - 1);
+        EditText editName = findViewById(R.id.etName);
+        EditText editCity = findViewById(R.id.etCity);
+        EditText editCellNumber = findViewById(R.id.editCell);
+        TextView rating = findViewById(R.id.txtRating);
+
+        editName.setText(team.getName());
+        editCity.setText(team.getCity());
+        editCellNumber.setText(team.getCellNumber());
+        rating.setText(String.valueOf(team.getRating()));
+
+    }
+
+    private void ReadFromTextFile()
+    {
+        //Write out the teams to a file
+        FileIO fileIO = new FileIO();
+
+        Integer counter = 0;
+        String[] data;// = new String [teams.size()];
+        //for(Team t : teams) data[counter++] = t.toString();
+
+        // fileIO.writeFile(this, data);
+
+
+        //Read the data out of the file
+        ArrayList<String> strData = fileIO.readFile(this);
+        teams = new ArrayList<Team>();
+
+        for(String s : strData)
+        {
+            data = s.split("\\|");
+            teams.add(new Team(Integer.parseInt(data[0]),
+                    data[1],
+                    data[2],
+                    Integer.parseInt(data[3]),
+                    Float.parseFloat(data[4]),
+                    data[5]));
+        }
     }
 
     private void initToggleButton() {
@@ -147,5 +308,6 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
     public void didFinishRaterDialog(float rating) {
         TextView textView = findViewById(R.id.txtRating);
         textView.setText(String.valueOf(rating));
+        team.setRating(rating);
     }
 }

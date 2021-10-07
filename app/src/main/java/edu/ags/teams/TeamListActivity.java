@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -29,22 +30,43 @@ public class TeamListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_team_list);
 
         teams = new ArrayList<Team>();
-/*        teams.add(new Team(1,"Packers","Green Bay", R.drawable.packers));
-        teams.add(new Team(2,"Vikings","Minnesota", R.drawable.vikings));
-        teams.add(new Team(3,"Lions","Detroit", R.drawable.lions));
-        teams.add(new Team(4,"Bears","Chicago", R.drawable.bears));*/
+/*        teams.add(new Team(1,"Packers","Green Bay", R.drawable.packers, 4.0f, "9202796888"));
+        teams.add(new Team(2,"Vikings","Minnesota", R.drawable.vikings, 3.0f, "9202796889"));
+        teams.add(new Team(3,"Lions","Detroit", R.drawable.lions, 2.0f, "9202796890"));
+        teams.add(new Team(4,"Bears","Chicago", R.drawable.bears, 2.5f, "9202796891"));*/
 
         Log.d(TAG, "onCreate: ");
 
         initListButton();
         initMapButton();
         initSettingsButton();
+        initAddTeam();
 
 
-        //ReadFromTextFile();
-        ReadFromXMLFile();
+        ReadFromTextFile();
+       // ReadFromXMLFile();
+        //WriteToTextFile();
 
         this.setTitle("TeamList");
+    }
+
+    private void initAddTeam() {
+        Button btnAddTeam = findViewById(R.id.buttonAddTeam);
+        btnAddTeam.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(TeamListActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void WriteToTextFile() {
+        FileIO fileIO = new FileIO();
+        Integer counter = 0;
+        String[] data = new String [teams.size()];
+        for (Team t : teams) data[counter++] = t.toString();
+        fileIO.writeFile(this,data);
     }
 
     private void initSettingsButton() {
@@ -107,7 +129,7 @@ public class TeamListActivity extends AppCompatActivity {
         }
     }
 
-    private void ReadFromXMLFile()
+/*    private void ReadFromXMLFile()
     {
         teams = new ArrayList<Team>();
 
@@ -138,7 +160,7 @@ public class TeamListActivity extends AppCompatActivity {
             Log.d(TAG, "ReadFromXMLFile: " + e.getMessage());
 
         }
-    }
+    }*/
 
     private void initListButton() {
         ImageButton ibList = findViewById(R.id.imageButtonList);
@@ -154,12 +176,17 @@ public class TeamListActivity extends AppCompatActivity {
         });
     }
 
-    private View.OnClickListener onItemClickListener = new View.OnClickListener() {
+    private final View.OnClickListener onItemClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) view.getTag();
             int position = viewHolder.getAdapterPosition();
-            Log.d(TAG, "onClick: " + teams.get(position).Description);
+            int teamId = teams.get(position).getId();
+            Log.d(TAG, "onClick: " + teams.get(position).Name);
+
+            Intent intent = new Intent(TeamListActivity.this, MainActivity.class);
+            intent.putExtra("teamId", teamId);
+            startActivity(intent);
         }
     };
 
@@ -178,7 +205,7 @@ public class TeamListActivity extends AppCompatActivity {
 
         for (Team t: teams)
         {
-            Log.d(TAG, "onResume: " + t.Description);
+            Log.d(TAG, "onResume: " + t.Name);
         }
 
     }
