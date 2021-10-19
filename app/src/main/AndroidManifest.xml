@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Teams">
         <activity
-            android:name=".TeamListActivity"
+            android:name=".MainActivity"
             android:exported="true" />
         <activity
             android:name=".TeamMapActivity"
@@ -19,7 +19,7 @@
             android:name=".TeamSettingsActivity"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name=".TeamListActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

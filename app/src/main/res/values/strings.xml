@@ -16,4 +16,5 @@
     <string name="enter_cell_number">Enter Cell Number</string>
     <string name="delete">Delete:</string>
     <string name="new1">New</string>
+    <string name="favorite">Favorite</string>
 </resources>

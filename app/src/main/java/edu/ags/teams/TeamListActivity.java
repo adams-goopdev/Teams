@@ -9,7 +9,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.Switch;
 
 import org.xmlpull.v1.XmlPullParser;
 
@@ -30,10 +32,12 @@ public class TeamListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_team_list);
 
         teams = new ArrayList<Team>();
-/*        teams.add(new Team(1,"Packers","Green Bay", R.drawable.packers, 4.0f, "9202796888"));
-        teams.add(new Team(2,"Vikings","Minnesota", R.drawable.vikings, 3.0f, "9202796889"));
-        teams.add(new Team(3,"Lions","Detroit", R.drawable.lions, 2.0f, "9202796890"));
-        teams.add(new Team(4,"Bears","Chicago", R.drawable.bears, 2.5f, "9202796891"));*/
+/*
+       teams.add(new Team(1,"Packers","Green Bay", R.drawable.packers, 4.0f, "9202796888",true));
+        teams.add(new Team(2,"Vikings","Minnesota", R.drawable.vikings, 3.0f, "9202796889",false));
+        teams.add(new Team(3,"Lions","Detroit", R.drawable.lions, 2.0f, "9202796890",false));
+        teams.add(new Team(4,"Bears","Chicago", R.drawable.bears, 2.5f, "9202796891",false));
+*/
 
         Log.d(TAG, "onCreate: ");
 
@@ -41,13 +45,52 @@ public class TeamListActivity extends AppCompatActivity {
         initMapButton();
         initSettingsButton();
         initAddTeam();
+        initDeleteSwitch();
 
 
-        ReadFromTextFile();
+       // ReadFromTextFile();
        // ReadFromXMLFile();
-        //WriteToTextFile();
+       // WriteToTextFile();
+
+       // for(Team team: teams)
+      //  {
+      //      SaveToDatabase(team);
+       // }
 
         this.setTitle("TeamList");
+    }
+
+    private void SaveToDatabase(Team team) {
+    TeamDataSource ds = new TeamDataSource(TeamListActivity.this);
+
+    try {
+        ds.open();
+        boolean result = ds.insert(team);
+        Log.d(TAG, "SaveToDatabase: Saved " + team);
+    }
+    catch (Exception e)
+    {
+        Log.d(TAG, "SaveToDatabase: " + e.getMessage());
+    }
+
+    }
+
+    private void initDeleteSwitch() {
+        Switch s = findViewById(R.id.switchDelete);
+
+        s.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                Boolean status = compoundButton.isChecked();
+                //Communicate the status to the adapter
+                Log.d(TAG, "onCheckedChanged: Did we make it here for Delete");
+                teamAdapter.setDelete(status);
+                // rebind the recyclerview in the adapter
+                teamAdapter.notifyDataSetChanged();
+
+            }
+        });
+
     }
 
     private void initAddTeam() {
@@ -101,8 +144,7 @@ public class TeamListActivity extends AppCompatActivity {
 
     }
 
-    private void ReadFromTextFile()
-    {
+    private void ReadFromTextFile() {
         //Write out the teams to a file
         FileIO fileIO = new FileIO();
 
@@ -125,7 +167,8 @@ public class TeamListActivity extends AppCompatActivity {
                     data[2],
                     Integer.parseInt(data[3]),
                     Float.parseFloat(data[4]),
-                    data[5]));
+                    data[5],
+                    Boolean.parseBoolean(data[6])));
         }
     }
 
@@ -148,7 +191,7 @@ public class TeamListActivity extends AppCompatActivity {
 
                         Log.d(TAG, "ReadFromXMLFile: " + id + ":" + description + ":" + city + ":" + imgid);
 
-                        teams.add(new Team(id, description, city, imgid));
+                        teams.add(new Team(id, description, city, imgid, 0, "", false));
                     }
                 }
                 xmlPullParser.next();
@@ -182,7 +225,7 @@ public class TeamListActivity extends AppCompatActivity {
             RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) view.getTag();
             int position = viewHolder.getAdapterPosition();
             int teamId = teams.get(position).getId();
-            Log.d(TAG, "onClick: " + teams.get(position).Name);
+            Log.d(TAG, "onClick: " + teams.get(position).getName());
 
             Intent intent = new Intent(TeamListActivity.this, MainActivity.class);
             intent.putExtra("teamId", teamId);
@@ -191,9 +234,19 @@ public class TeamListActivity extends AppCompatActivity {
     };
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
+
+        TeamDataSource ds = new TeamDataSource(this);
+        try {
+            ds.open();
+            teams = ds.getTeams();
+            Log.d(TAG, "onResume: Database is open");
+        }
+        catch (Exception e)
+        {
+            Log.d(TAG, "onResume: Open DB error " + e.getMessage());
+        }
 
         teamList = findViewById(R.id.rvTeams);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
@@ -205,7 +258,7 @@ public class TeamListActivity extends AppCompatActivity {
 
         for (Team t: teams)
         {
-            Log.d(TAG, "onResume: " + t.Name);
+            Log.d(TAG, "onResume: " + t.getName() + t.toString());
         }
 
     }

@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
        
        Bundle extras = getIntent().getExtras();
        
-        ReadFromTextFile();
+       ReadFromTextFile();
        
        
        if(extras != null) {
@@ -76,22 +76,28 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
             @Override
             public void onClick(View view) {
 
-                if(team.getId() == -1)
-                {
-                    //new team
-                    team.Id = teams.get(teams.size() - 1).Id + 1;
-                    teams.add(team);
-                }
-                else
-                {
-                    //Update the team in the array
-                    Log.d(TAG, "onClick: "+ team.toString());
-                    teams.set(team.Id-1, team);
-                }
+                try {
+                    if(team.getId() == -1)
+                    {
+                        //new team
+                        team.setId(teams.get(teams.size() - 1).getId() + 1);
+                        teams.add(team);
+                    }
+                    else
+                    {
+                        //Update the team in the array
+                        //Log.d(TAG, "onClick: "+ team.toString());
+                        teams.set(team.getId() -1, team);
+                    }
 
-                Log.d(TAG, "onClick: "+ teams.get(team.Id - 1).toString());
-               WriteToTextFile();
-                Log.d(TAG, "onClick: Wrote to File");
+                   // Log.d(TAG, "onClick: "+ teams.get(team.getId() - 1).toString());
+                    WriteToTextFile();
+                    //Log.d(TAG, "onClick: Wrote to File");
+                }
+                catch (Exception e)
+                {
+                    Log.d(TAG, "Adding new team: Exception " + e.getMessage());
+                }
             }
         });
     }
@@ -172,8 +178,7 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
 
     }
 
-    private void ReadFromTextFile()
-    {
+    private void ReadFromTextFile() {
         //Write out the teams to a file
         FileIO fileIO = new FileIO();
 
@@ -196,7 +201,8 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
                     data[2],
                     Integer.parseInt(data[3]),
                     Float.parseFloat(data[4]),
-                    data[5]));
+                    data[5],
+                    Boolean.parseBoolean(data[6])));
         }
     }
 
