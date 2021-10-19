@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
        
        Bundle extras = getIntent().getExtras();
        
-       ReadFromTextFile();
+      // ReadFromTextFile();
        
        
        if(extras != null) {
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
                     }
 
                    // Log.d(TAG, "onClick: "+ teams.get(team.getId() - 1).toString());
-                    WriteToTextFile();
+                    //WriteToTextFile();
                     //Log.d(TAG, "onClick: Wrote to File");
                 }
                 catch (Exception e)
@@ -304,8 +304,7 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
 
     }
