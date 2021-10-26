@@ -17,4 +17,8 @@
     <string name="delete">Delete:</string>
     <string name="new1">New</string>
     <string name="favorite">Favorite</string>
+    <string name="sort_teams_by">Sort Teams By:</string>
+    <string name="acending">Acending</string>
+    <string name="descending">Descending</string>
+    <string name="order_by">Order By:</string>
 </resources>

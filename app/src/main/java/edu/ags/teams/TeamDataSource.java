@@ -23,6 +23,40 @@ public class TeamDataSource {
         database = dbHelper.getWritableDatabase();
     }
 
+    public void open(boolean refresh) throws SQLException{
+        database = dbHelper.getWritableDatabase();
+        if(refresh) RefreshData();
+    }
+
+    private void RefreshData() {
+        ArrayList<Team> teams = new ArrayList<Team>();
+        teams.add(new Team(1,"Packers","Green Bay", R.drawable.packers, 4.0f, "9202796888",true));
+        teams.add(new Team(2,"Vikings","Minnesota", R.drawable.vikings, 3.0f, "9202796889",false));
+        teams.add(new Team(3,"Lions","Detroit", R.drawable.lions, 2.0f, "9202796890",false));
+        teams.add(new Team(4,"Bears","Chicago", R.drawable.bears, 2.5f, "9202796891",false));
+
+        deleteAll();
+
+        for(Team t : teams)
+        {
+            insert(t);
+        }
+
+    }
+
+    private boolean deleteAll() {
+        boolean didSucceed = false;
+        try {
+            didSucceed = database.delete(TEAM, null , null) >0;
+        }
+        catch (Exception e)
+        {
+            Log.d(TAG, "delete: Error " + e.getMessage());
+        }
+        return didSucceed;
+    }
+
+
     public void close()
     {
         dbHelper.close();
@@ -54,7 +88,7 @@ public class TeamDataSource {
             updateValues.put("city",team.getCity());
             updateValues.put("rating", team.getRating());
             updateValues.put("cellnumber",team.getCellNumber());
-            updateValues.put("isfavorite", team.getFavorite());
+            updateValues.put("isfavorite", team.getFavorite()? 1 :0 );
             updateValues.put("imgid", team.getImgId());
 
             Log.d(TAG, "Update line: " + updateValues);
@@ -107,7 +141,8 @@ public class TeamDataSource {
                 team.setRating(cursor.getFloat(3));
                 team.setImgId(cursor.getInt(4));
                 team.setCellNumber(cursor.getString(5));
-                team.setFavorite(Boolean.parseBoolean(cursor.getString(6)));
+                Log.d(TAG, "getTeams: isFavorite:" + cursor.getString(6));
+                team.setFavorite(cursor.getString(6).equals("1"));
                 teams.add(team);
                 cursor.moveToNext();
 
@@ -137,7 +172,7 @@ public class TeamDataSource {
                 team.setRating(cursor.getFloat(3));
                 team.setImgId(cursor.getInt(4));
                 team.setCellNumber(cursor.getString(5));
-                team.setFavorite(Boolean.parseBoolean(cursor.getString(6)));
+                team.setFavorite(cursor.getString(6).equals("1"));
                 cursor.close();
             }
         }

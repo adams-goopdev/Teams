@@ -48,17 +48,24 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
        
       // ReadFromTextFile();
        
-       
-       if(extras != null) {
-           //Edit existing team
-           Log.d(TAG, "onCreate: " + extras.getInt("teamId"));
-           initTeam(extras.getInt("teamId"));
-       }
-       else {
-           //Make a new one
-           team = new Team();
-           Log.d(TAG, "onCreate: new team");
-       }
+
+        try {
+            if(extras != null) {
+                //Edit existing team
+                Log.d(TAG, "onCreate: " + extras.getInt("teamId"));
+                initTeam(extras.getInt("teamId"));
+            }
+            else {
+                //Make a new one
+                team = new Team();
+                Log.d(TAG, "onCreate: new team");
+            }
+        }
+        catch (Exception e)
+        {
+            Log.d(TAG, "onCreate: " + e.getMessage());
+        }
+
         this.setTitle("Mainactivity");
     }
     
@@ -75,24 +82,42 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                TeamDataSource ds = new TeamDataSource(MainActivity.this);
                 try {
                     if(team.getId() == -1)
                     {
                         //new team
-                        team.setId(teams.get(teams.size() - 1).getId() + 1);
-                        teams.add(team);
+                        try {
+                            ds.open();
+                            boolean result = ds.insert(team);
+                            Log.d(TAG, "SaveToDatabase: Saved " + team);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.d(TAG, "SaveToDatabase: " + e.getMessage());
+                        }
                     }
                     else
                     {
+                        try {
+                            ds.open();
+                            boolean result = ds.update(team);
+                            Log.d(TAG, "SaveToDatabase: Saved " + team);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.d(TAG, "SaveToDatabase: " + e.getMessage());
+                        }
+
                         //Update the team in the array
                         //Log.d(TAG, "onClick: "+ team.toString());
                         teams.set(team.getId() -1, team);
                     }
 
-                   // Log.d(TAG, "onClick: "+ teams.get(team.getId() - 1).toString());
                     //WriteToTextFile();
-                    //Log.d(TAG, "onClick: Wrote to File");
+
+
+
                 }
                 catch (Exception e)
                 {
@@ -165,16 +190,25 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
     }
 
     private void initTeam(int teamId) {
-        team = teams.get(teamId - 1);
+
+        TeamDataSource ds = new TeamDataSource(this);
+        ds.open();
+
+        //team = teams.get(teamId);
+        team = ds.getTeam(teamId);
+        ds.close();
+
         EditText editName = findViewById(R.id.etName);
         EditText editCity = findViewById(R.id.etCity);
         EditText editCellNumber = findViewById(R.id.editCell);
         TextView rating = findViewById(R.id.txtRating);
+        ImageButton imageButtonPhoto = findViewById(R.id.imgPhoto);
 
         editName.setText(team.getName());
         editCity.setText(team.getCity());
         editCellNumber.setText(team.getCellNumber());
         rating.setText(String.valueOf(team.getRating()));
+        imageButtonPhoto.setImageResource(team.getImgId());
 
     }
 

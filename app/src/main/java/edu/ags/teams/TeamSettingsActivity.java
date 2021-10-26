@@ -2,10 +2,14 @@ package edu.ags.teams;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 public class TeamSettingsActivity extends AppCompatActivity {
     public static final String TAG = "myDebug";
@@ -17,8 +21,80 @@ public class TeamSettingsActivity extends AppCompatActivity {
         initListButton();
         initMapButton();
         initSettingsButton();
+        initSortByClick();
+        initSortOrderClick();
         this.setTitle("Settings");
     }
+
+    private void initSortOrderClick() {
+        RadioGroup rgSortOrder = findViewById(R.id.radioGroupSortOrder);
+        rgSortOrder.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                RadioButton rbAscending = findViewById(R.id.radioAscending);
+
+
+                String OrderByField="";
+
+                if(rbAscending.isChecked()) {
+                    OrderByField = "ASC";
+
+                }
+                else{
+                    OrderByField = "DESC";
+                }
+
+                getSharedPreferences("TeamsPreferences",
+                        Context.MODE_PRIVATE)
+                        .edit()
+                        .putString("sortOrder", OrderByField)
+                        .apply();
+
+                Log.d(TAG, "onCheckedChanged: Order" + OrderByField);
+
+            }
+        });
+
+
+
+
+    }
+
+    private void initSortByClick() {
+
+        RadioGroup rgSortBy = findViewById(R.id.radioGroupSortBy);
+        rgSortBy.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                RadioButton rbName = findViewById(R.id.radioName);
+                RadioButton rbCity = findViewById(R.id.radioCity);
+
+
+                String sortField="";
+
+                if(rbName.isChecked()) {
+                   sortField = "name";
+
+                }
+                else if(rbCity.isChecked()){
+                    sortField = "city";
+                }
+                else{
+                    sortField = "rating";
+                }
+
+                getSharedPreferences("TeamsPreferences",
+                        Context.MODE_PRIVATE)
+                        .edit()
+                        .putString("sortField", sortField)
+                        .apply();
+
+                Log.d(TAG, "onCheckedChanged: SortField" + sortField);
+
+            }
+        });
+    }
+
     private void initSettingsButton() {
 
         ImageButton ibList = findViewById(R.id.imageButtonSettings);

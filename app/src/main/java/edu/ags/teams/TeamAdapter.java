@@ -98,12 +98,12 @@ public class TeamAdapter extends RecyclerView.Adapter {
        // Log.d(TAG, "onBindViewHolder: " + team);
 
         if(isDeleteing) {
-            Log.d(TAG, "onBindViewHolder: Deleting" + isDeleteing);
+            //Log.d(TAG, "onBindViewHolder: Deleting" + isDeleteing);
             teamViewHolder.getBtnDelete().setVisibility(View.VISIBLE);
             teamViewHolder.getBtnDelete().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    deleteItem(position);
+                    deleteItem(position, team.getId());
                 }
             });
         }
@@ -124,11 +124,22 @@ public class TeamAdapter extends RecyclerView.Adapter {
 
     }
 
-    private void deleteItem(int position) {
+    private void deleteItem(int position, int id) {
         //Remove it from the teamData
         teamData.remove(position);
         //Write the file
-        WriteToTextFile();
+       // WriteToTextFile();
+
+        TeamDataSource ds = new TeamDataSource(parentContext);
+        try {
+            ds.open();
+            boolean result = ds.delete(id);
+            Log.d(TAG, "Delete Team: " + id);
+        }
+        catch (Exception e)
+        {
+            Log.d(TAG, "Delete Team: " + e.getMessage());
+        }
         //Rebind
         notifyDataSetChanged();
     }
