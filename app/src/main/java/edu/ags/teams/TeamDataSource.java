@@ -20,120 +20,121 @@ public class TeamDataSource {
     }
 
     public void open() throws SQLException{
-        database = dbHelper.getWritableDatabase();
+        database  = dbHelper.getWritableDatabase();
     }
 
     public void open(boolean refresh) throws SQLException{
-        database = dbHelper.getWritableDatabase();
+        database  = dbHelper.getWritableDatabase();
         if(refresh) RefreshData();
     }
 
     private void RefreshData() {
-        ArrayList<Team> teams = new ArrayList<Team>();
-        teams.add(new Team(1,"Packers","Green Bay", R.drawable.packers, 4.0f, "9202796888",true));
-        teams.add(new Team(2,"Vikings","Minnesota", R.drawable.vikings, 3.0f, "9202796889",false));
-        teams.add(new Team(3,"Lions","Detroit", R.drawable.lions, 2.0f, "9202796890",false));
-        teams.add(new Team(4,"Bears","Chicago", R.drawable.bears, 2.5f, "9202796891",false));
+        ArrayList<Team>  teams = new ArrayList<Team>();
+        teams.add(new Team(1, "Packers", "Green Bay", R.drawable.packers, 4.0f, "9205697501", true));
+        teams.add(new Team(2, "Vikings", "Minnesota", R.drawable.vikings, 3.0f, "8007453000", false));
+        teams.add(new Team(3, "Lions", "Detroit", R.drawable.lions, 2.0f, "3131234567", false));
+        teams.add(new Team(4, "Bears", "Chicago", R.drawable.bears, 2.5f, "7739874356", false));
 
         deleteAll();
-
         for(Team t : teams)
         {
             insert(t);
         }
-
     }
 
     private boolean deleteAll() {
         boolean didSucceed = false;
-        try {
-            didSucceed = database.delete(TEAM, null , null) >0;
+        try{
+            didSucceed = database.delete(TEAM, null, null) > 0;
         }
-        catch (Exception e)
+        catch(Exception e)
         {
-            Log.d(TAG, "delete: Error " + e.getMessage());
+            Log.d(TAG, "delete: Error: " + e.getMessage());
         }
         return didSucceed;
     }
-
 
     public void close()
     {
         dbHelper.close();
     }
 
-    public boolean delete(int id){
-
+    public boolean delete(int id)
+    {
         boolean didSucceed = false;
-        try {
-            didSucceed = database.delete(TEAM,"id=" + id, null) >0;
+        try{
+            didSucceed = database.delete(TEAM, "id=" + id, null) > 0;
         }
-        catch (Exception e)
+        catch(Exception e)
         {
-            Log.d(TAG, "delete: Error " + e.getMessage());
+            Log.d(TAG, "delete: Error: " + e.getMessage());
         }
         return didSucceed;
     }
 
-    public boolean update(Team team) {
+    public boolean update(Team team)
+    {
         boolean didSucceed = false;
 
-        try {
+        try{
             ContentValues updateValues = new ContentValues();
 
-            //Set the values
+            // Set the values
             Long id = (long)team.getId();
 
-            updateValues.put("name",team.getName());
-            updateValues.put("city",team.getCity());
+            updateValues.put("name", team.getName());
+            updateValues.put("city", team.getCity());
             updateValues.put("rating", team.getRating());
-            updateValues.put("cellnumber",team.getCellNumber());
-            updateValues.put("isfavorite", team.getFavorite()? 1 :0 );
+            updateValues.put("cellnumber", team.getCellNumber());
+            updateValues.put("isfavorite", team.getFavorite() ? 1 : 0);
             updateValues.put("imgid", team.getImgId());
 
-            Log.d(TAG, "Update line: " + updateValues);
-            didSucceed = database.update(TEAM, updateValues,"id=" + id, null) > 0;
+            Log.d(TAG, "update: " + updateValues);
+            didSucceed = database.update(TEAM, updateValues, "id=" + id, null) > 0;
         }
-        catch (Exception e)
+        catch(Exception e)
         {
-            Log.d(TAG, "Update line: Error " + e.getMessage());
+            Log.d(TAG, "update: Error: " + e.getMessage());
         }
         return didSucceed;
     }
-
-    public boolean insert(Team team) {
-
+    public boolean insert(Team team)
+    {
         boolean didSucceed = false;
 
-        try {
+        try{
             ContentValues initialValues = new ContentValues();
-            //Set the values
-            initialValues.put("name",team.getName());
-            initialValues.put("city",team.getCity());
+
+            // Set the values
+            initialValues.put("name", team.getName());
+            initialValues.put("city", team.getCity());
             initialValues.put("rating", team.getRating());
-            initialValues.put("cellnumber",team.getCellNumber());
-            initialValues.put("isfavorite", team.getFavorite());
+            initialValues.put("cellnumber", team.getCellNumber());
+            initialValues.put("isfavorite", team.getFavorite() ? 1 : 0);
             initialValues.put("imgid", team.getImgId());
 
             Log.d(TAG, "insert: " + initialValues);
-            didSucceed = database.insert(TEAM,null, initialValues) > 0;
+            didSucceed = database.insert(TEAM, null, initialValues) > 0;
         }
-        catch (Exception e)
+        catch(Exception e)
         {
-            Log.d(TAG, "insert: Error " + e.getMessage());
+            Log.d(TAG, "insert: Error: " + e.getMessage());
         }
         return didSucceed;
+
     }
 
-    public ArrayList<Team> getTeams(){
+    public ArrayList<Team> getTeams()
+    {
         ArrayList<Team> teams = new ArrayList<Team>();
-        try {
-            String query = "Select * from Team";
+
+        try{
+            String query = "SELECT * FROM team";
             Cursor cursor = database.rawQuery(query, null);
 
             Team team;
             cursor.moveToFirst();
-            while (!cursor.isAfterLast()){
+            while(!cursor.isAfterLast()){
                 team = new Team();
                 team.setId(cursor.getInt(0));
                 team.setName(cursor.getString(1));
@@ -141,31 +142,28 @@ public class TeamDataSource {
                 team.setRating(cursor.getFloat(3));
                 team.setImgId(cursor.getInt(4));
                 team.setCellNumber(cursor.getString(5));
-                Log.d(TAG, "getTeams: isFavorite:" + cursor.getString(6));
                 team.setFavorite(cursor.getString(6).equals("1"));
                 teams.add(team);
                 cursor.moveToNext();
-
             }
             cursor.close();
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             Log.d(TAG, "getTeams: " + e.getMessage());
         }
         return teams;
+
     }
 
-    public Team getTeam(int id){
-
+    public Team getTeam(int id)
+    {
         Team team = team = new Team();
-        try {
-            String query = "Select * from Team WHERE Id = " + id;
+        try{
+            String query = "SELECT * FROM team WHERE Id = " + id;
             Cursor cursor = database.rawQuery(query, null);
 
-            cursor.moveToFirst();
-            if(cursor.moveToFirst()){
-                team = new Team();
+            if(cursor.moveToFirst()) {
                 team.setId(cursor.getInt(0));
                 team.setName(cursor.getString(1));
                 team.setCity(cursor.getString(2));
@@ -176,12 +174,11 @@ public class TeamDataSource {
                 cursor.close();
             }
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             Log.d(TAG, "getTeams: " + e.getMessage());
         }
         return team;
     }
-
 
 }

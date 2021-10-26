@@ -12,26 +12,22 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
 public class TeamAdapter extends RecyclerView.Adapter {
-
     private static final String TAG = "myDebug";
     private ArrayList<Team> teamData;
     private View.OnClickListener onClickListener;
     private Context parentContext;
-    private boolean isDeleteing;
+    private boolean isDeleting;
 
-    public void setDelete(boolean status)
-    {
-        isDeleteing =  status;
+    public void setDelete(boolean status) {
+        isDeleting = status;
     }
-
 
     public class TeamViewHolder extends RecyclerView.ViewHolder{
 
@@ -51,113 +47,110 @@ public class TeamAdapter extends RecyclerView.Adapter {
 
             itemView.setTag(this);
             itemView.setOnClickListener(onClickListener);
-            Log.d(TAG, "TeamViewHolder: ");
-
         }
 
-        public TextView getTextViewDescription(){return textViewDescription;}
-        public TextView getTextViewCity(){return textViewCity;}
-        public ImageButton getImageButtonPhoto(){return imageButtonPhoto;}
-        public CheckBox getChkFavorite(){return chkFavorite;}
-        public Button getBtnDelete(){return btnDelete;}
+        public TextView getTextViewDescription() { return textViewDescription; }
+        public TextView getTextViewCity() {return textViewCity;}
+        public ImageButton getImageButtonPhoto() {return imageButtonPhoto;}
+        public CheckBox getChkFavorite() {return chkFavorite;}
+        public Button getBtnDelete() {return btnDelete;}
     }
 
-    public  TeamAdapter(ArrayList<Team> arrayList, Context context){
+    public TeamAdapter(ArrayList<Team> arrayList, Context context){
         teamData = arrayList;
         parentContext = context;
-        Log.d(TAG, "TeamAdapter: " + arrayList.size());
+        //Log.d(TAG, "TeamAdapter: " + arrayList.size());
     }
 
     public void setOnClickListener(View.OnClickListener itemClickListener)
     {
+        //Log.d(TAG, "setOnClickListener: ");
         onClickListener = itemClickListener;
-        Log.d(TAG, "setOnClickListener: TeamAdapter");
     }
-
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        //retrieve and inflate the list_item xml
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item,parent,false);
+        // retrieve and inflate the list_item.xml
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false );
         return new TeamViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         TeamViewHolder teamViewHolder = (TeamViewHolder) holder;
+
         Team team = teamData.get(position);
 
-
-        //Bind to the screen. Show up on the screen
+        // Bind to the screen
         teamViewHolder.getTextViewDescription().setText(team.getName());
         teamViewHolder.getTextViewCity().setText(team.getCity());
         teamViewHolder.getImageButtonPhoto().setImageResource(team.getImgId());
         teamViewHolder.getChkFavorite().setChecked(team.getFavorite());
 
-       // Log.d(TAG, "onBindViewHolder: " + team);
+        //Log.d(TAG, "onBindViewHolder: " + team);
 
-        if(isDeleteing) {
-            //Log.d(TAG, "onBindViewHolder: Deleting" + isDeleteing);
+        if(isDeleting) {
+            //Log.d(TAG, "onBindViewHolder: Deleting: " + isDeleting);
             teamViewHolder.getBtnDelete().setVisibility(View.VISIBLE);
             teamViewHolder.getBtnDelete().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
+
                     deleteItem(position, team.getId());
                 }
             });
         }
         else
         {
-            Log.d(TAG, "onBindViewHolder: NOtDeleting" + isDeleteing);
+            //Log.d(TAG, "onBindViewHolder: Not Deleting: " + isDeleting);
             teamViewHolder.getBtnDelete().setVisibility(View.INVISIBLE);
         }
+
         teamViewHolder.getChkFavorite().setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 Log.d(TAG, "onCheckedChanged: " + team.getName() + ":" + b);
                 team.setFavorite(b);
                 WriteToTextFile();
-
             }
         });
-
     }
 
     private void deleteItem(int position, int id) {
-        //Remove it from the teamData
+        // Remove it from the teamData
         teamData.remove(position);
-        //Write the file
-       // WriteToTextFile();
+
+        // Write the file.
+        // WriteToTextFile();
 
         TeamDataSource ds = new TeamDataSource(parentContext);
-        try {
+        try{
             ds.open();
             boolean result = ds.delete(id);
-            Log.d(TAG, "Delete Team: " + id);
+            Log.d(TAG, "deleteItem: Delete Team: " + id);
         }
-        catch (Exception e)
+        catch(Exception ex)
         {
-            Log.d(TAG, "Delete Team: " + e.getMessage());
+            Log.d(TAG, "deleteItem: " + ex.getMessage());
         }
-        //Rebind
+        // Rebind
         notifyDataSetChanged();
     }
 
-    private void WriteToTextFile() {
+    private void WriteToTextFile()
+    {
         FileIO fileIO = new FileIO();
         Integer counter = 0;
-        String[] data = new String [teamData.size()];
+        String[] data = new String[teamData.size()];
         for (Team t : teamData) data[counter++] = t.toString();
-        fileIO.writeFile((AppCompatActivity) parentContext,data);
+        fileIO.writeFile((AppCompatActivity) parentContext, data);
     }
+
+
 
     @Override
     public int getItemCount() {
         return teamData.size();
     }
-
-
-
-
 }

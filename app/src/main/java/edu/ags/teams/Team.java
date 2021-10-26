@@ -1,22 +1,13 @@
 package edu.ags.teams;
 
 public class Team {
-
+    public void setId(int id) {
+        Id = id;
+    }
 
     private int Id;
     private String Name;
     private String City;
-    private int ImgId;
-    private float Rating;
-    private String CellNumber;
-    private Boolean isFavorite;
-
-
-    public Team()
-    {
-        Id = -1;
-        ImgId = R.drawable.noimage;
-    }
 
     public int getImgId() {
         return ImgId;
@@ -26,16 +17,27 @@ public class Team {
         ImgId = imgId;
     }
 
+    private int ImgId;
+    private float Rating;
+    public String CellNumber;
+
     public Boolean getFavorite() {
         return isFavorite;
     }
-    public void setFavorite(Boolean isfavorite) {
-        isFavorite = isfavorite;
+
+    public void setFavorite(Boolean favorite) {
+        isFavorite = favorite;
     }
 
-    public void setId(int id) {
-        Id = id;
+    private Boolean isFavorite;
+
+    public Team()
+    {
+        Id = -1;
+        ImgId = R.drawable.noimage;
+        isFavorite = false;
     }
+
     public int getId()
     {
         return Id;
@@ -79,7 +81,7 @@ public class Team {
 
     public Team(int id, String name, String city, int imgId, float rating, String cellNumber, Boolean isfavorite)
     {
-        //Initialize fields when instantiating the object
+        // Initialize fields when instantiating the object
         Id = id;
         Name = name;
         City = city;
@@ -91,7 +93,6 @@ public class Team {
 
     public String toString()
     {
-        return Id + "|" + Name + "|" + City + "|" + ImgId + '|' + Rating + "|" + CellNumber + "|" + isFavorite;
+        return Id + "|" + Name + "|" + City + "|" + ImgId + "|" + Rating + "|" + CellNumber + "|" + isFavorite;
     }
-
 }

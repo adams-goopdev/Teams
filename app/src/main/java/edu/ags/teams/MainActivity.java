@@ -6,27 +6,35 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListAdapter;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements RaterDialog.SaveRatingListener{
+import edu.ags.teams.FileIO;
+import edu.ags.teams.R;
+import edu.ags.teams.RaterDialog;
+import edu.ags.teams.Team;
+import edu.ags.teams.TeamDataSource;
+import edu.ags.teams.TeamListActivity;
+import edu.ags.teams.TeamMapActivity;
+import edu.ags.teams.TeamSettingsActivity;
 
+public class MainActivity extends AppCompatActivity  implements  RaterDialog.SaveRatingListener{
     public static final String TAG = "myDebug";
     Team team;
+
     ArrayList<Team> teams;
 
     @Override
@@ -34,95 +42,83 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Log.d(TAG, "onCreate: ");
-       initListButton();
-       initMapButton();
-       initSettingsButton();
-       initRatingButton();
-       setForEditing(false);
-       initToggleButton();
-       initTextChangedEvents();
-       initSaveButton();
-       
-       Bundle extras = getIntent().getExtras();
-       
-      // ReadFromTextFile();
-       
+        initListButton();
+        initMapButton();
+        initSettingsButton();
+        initRatingButton();
+        setForEditing(false);
+        initToggleButton();
+        initTextChangedEvents();
+        initSaveButton();
 
-        try {
-            if(extras != null) {
-                //Edit existing team
-                Log.d(TAG, "onCreate: " + extras.getInt("teamId"));
-                initTeam(extras.getInt("teamId"));
-            }
-            else {
-                //Make a new one
-                team = new Team();
-                Log.d(TAG, "onCreate: new team");
-            }
+        Bundle extras = getIntent().getExtras();
+
+        //ReadFromTextFile();
+
+        if(extras != null) {
+            // Edit an existing team
+            Log.d(TAG, "onCreate: " + extras.getInt("teamId"));
+            initTeam(extras.getInt("teamId"));
         }
-        catch (Exception e)
-        {
-            Log.d(TAG, "onCreate: " + e.getMessage());
+        else {
+            // Make a new one.
+            team = new Team();
+            Log.d(TAG, "onCreate: New Team");
         }
 
-        this.setTitle("Mainactivity");
+        this.setTitle("MainActivity");
     }
-    
-    private void WriteToTextFile() {
+    private void WriteToTextFile()
+    {
         FileIO fileIO = new FileIO();
         Integer counter = 0;
-        String[] data = new String [teams.size()];
+        String[] data = new String[teams.size()];
         for (Team t : teams) data[counter++] = t.toString();
-        fileIO.writeFile(this,data);
+        fileIO.writeFile(this, data);
     }
-    
+
     private void initSaveButton() {
         Button btnSave = findViewById(R.id.btnSave);
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 TeamDataSource ds = new TeamDataSource(MainActivity.this);
-                try {
-                    if(team.getId() == -1)
-                    {
-                        //new team
-                        try {
-                            ds.open();
-                            boolean result = ds.insert(team);
-                            Log.d(TAG, "SaveToDatabase: Saved " + team);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.d(TAG, "SaveToDatabase: " + e.getMessage());
-                        }
-                    }
-                    else
-                    {
-                        try {
-                            ds.open();
-                            boolean result = ds.update(team);
-                            Log.d(TAG, "SaveToDatabase: Saved " + team);
-                        }
-                        catch (Exception e)
-                        {
-                            Log.d(TAG, "SaveToDatabase: " + e.getMessage());
-                        }
 
-                        //Update the team in the array
-                        //Log.d(TAG, "onClick: "+ team.toString());
-                        teams.set(team.getId() -1, team);
+                if(team.getId() == -1){
+                    try{
+                        ds.open();
+                        boolean result = ds.insert(team);
+                        Log.d(TAG, "SaveToDatabase: Saved: " + team.toString());
+                    }
+                    catch(Exception ex)
+                    {
+                        Log.d(TAG, "SaveToDatabase: " + ex.getMessage());
                     }
 
-                    //WriteToTextFile();
-
-
-
                 }
-                catch (Exception e)
-                {
-                    Log.d(TAG, "Adding new team: Exception " + e.getMessage());
+                else {
+                    try{
+                        ds.open();
+                        boolean result = ds.update(team);
+                        Log.d(TAG, "SaveToDatabase: Saved: " + team.toString());
+                    }
+                    catch(Exception ex)
+                    {
+                        Log.d(TAG, "SaveToDatabase: " + ex.getMessage());
+                    }
+                    Log.d(TAG, "onClick: Update Team: " + team.toString());
+                    teams.set(team.getId() - 1, team);
                 }
+
+
+                //WriteToTextFile();
+
+                Log.d(TAG, "onClick: Wrote the file.");
+
+                Intent intent = new Intent(MainActivity.this, TeamListActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
         });
     }
@@ -140,34 +136,32 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                //Log.d(TAG, "onTextChanged: Name");
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                //Log.d(TAG, "afterTextChanged: Name");
+                team.setName(editName.getText().toString());
+            }
+        });
+
+        editCity.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                team.setName(editName.getText().toString());
-                Log.d(TAG, "afterTextChanged: Name");
+                team.setCity(editCity.getText().toString());
             }
         });
-
-
-    editCity.addTextChangedListener(new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-        }
-
-        @Override
-        public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-        }
-
-        @Override
-        public void afterTextChanged(Editable editable) {
-            team.setCity(editCity.getText().toString());
-        }
-    });
-
         editCellNumber.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -184,9 +178,6 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
                 team.setCellNumber(editCellNumber.getText().toString());
             }
         });
-
-
-
     }
 
     private void initTeam(int teamId) {
@@ -194,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
         TeamDataSource ds = new TeamDataSource(this);
         ds.open();
 
-        //team = teams.get(teamId);
+        //team = teams.get(teamId-1);
         team = ds.getTeam(teamId);
         ds.close();
 
@@ -212,24 +203,20 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
 
     }
 
-    private void ReadFromTextFile() {
-        //Write out the teams to a file
+
+    private void ReadFromTextFile()
+    {
+        //  Write out the data to a flat file.
         FileIO fileIO = new FileIO();
 
-        Integer counter = 0;
-        String[] data;// = new String [teams.size()];
-        //for(Team t : teams) data[counter++] = t.toString();
-
-        // fileIO.writeFile(this, data);
-
-
-        //Read the data out of the file
+        // Read the data out of the flat file.
         ArrayList<String> strData = fileIO.readFile(this);
         teams = new ArrayList<Team>();
 
         for(String s : strData)
         {
-            data = s.split("\\|");
+            // Remember to include \\
+            String[] data = s.split("\\|");
             teams.add(new Team(Integer.parseInt(data[0]),
                     data[1],
                     data[2],
@@ -239,6 +226,7 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
                     Boolean.parseBoolean(data[6])));
         }
     }
+
 
     private void initToggleButton() {
         ToggleButton toggleButtonEdit = findViewById(R.id.toggleButtonEdit);
@@ -257,7 +245,6 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
         Button btnRating = findViewById(R.id.btnRating);
         EditText editCell = findViewById(R.id.editCell);
 
-
         etName.setEnabled(enabled);
         etCity.setEnabled(enabled);
         btnRating.setEnabled(enabled);
@@ -273,12 +260,11 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
             scrollView.fullScroll(ScrollView.FOCUS_UP);
             editCell.setInputType(InputType.TYPE_NULL);
         }
-    }
 
+    }
 
     private void initRatingButton() {
         Button btnRating = findViewById(R.id.btnRating);
-
         btnRating.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -286,41 +272,37 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
                 RaterDialog raterDialog = new RaterDialog();
                 Log.d(TAG, "onClick: Before Show");
                 raterDialog.show(fragmentManager, "Rate Team");
-                Log.d(TAG, "onClick: AfterShow");
+                Log.d(TAG, "onClick: After Show");
             }
         });
     }
 
     private void initSettingsButton() {
-
         ImageButton ibList = findViewById(R.id.imageButtonSettings);
 
         ibList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Show the list activity
+                // Show the List Activity
                 Intent intent = new Intent(MainActivity.this, TeamSettingsActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
         });
-
     }
 
     private void initMapButton() {
-
         ImageButton ibList = findViewById(R.id.imageButtonMap);
 
         ibList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Show the list activity
+                // Show the List Activity
                 Intent intent = new Intent(MainActivity.this, TeamMapActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
         });
-
     }
 
     private void initListButton() {
@@ -329,7 +311,7 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
         ibList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Show the list activity
+                // Show the List Activity
                 Intent intent = new Intent(MainActivity.this, TeamListActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
@@ -338,15 +320,16 @@ public class MainActivity extends AppCompatActivity implements RaterDialog.SaveR
     }
 
     @Override
-    public void onResume() {
+    public void onResume()
+    {
         super.onResume();
 
     }
 
     @Override
     public void didFinishRaterDialog(float rating) {
-        TextView textView = findViewById(R.id.txtRating);
-        textView.setText(String.valueOf(rating));
+        TextView txtRating = findViewById(R.id.txtRating);
+        txtRating.setText(String.valueOf(rating));
         team.setRating(rating);
     }
 }

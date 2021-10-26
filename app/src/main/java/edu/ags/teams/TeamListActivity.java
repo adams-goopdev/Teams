@@ -20,11 +20,9 @@ import java.util.ArrayList;
 public class TeamListActivity extends AppCompatActivity {
 
     public static final String TAG = "myDebug";
-
     RecyclerView teamList;
-    ArrayList<Team> teams;
     TeamAdapter teamAdapter;
-
+    ArrayList<Team> teams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,47 +30,45 @@ public class TeamListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_team_list);
 
         teams = new ArrayList<Team>();
-/*
-       teams.add(new Team(1,"Packers","Green Bay", R.drawable.packers, 4.0f, "9202796888",true));
-        teams.add(new Team(2,"Vikings","Minnesota", R.drawable.vikings, 3.0f, "9202796889",false));
-        teams.add(new Team(3,"Lions","Detroit", R.drawable.lions, 2.0f, "9202796890",false));
-        teams.add(new Team(4,"Bears","Chicago", R.drawable.bears, 2.5f, "9202796891",false));
-*/
+        /*teams.add(new Team(1, "Packers", "Green Bay", R.drawable.packers, 4.0f, "9205697501", true));
+        teams.add(new Team(2, "Vikings", "Minnesota", R.drawable.vikings, 3.0f, "8007453000", false));
+        teams.add(new Team(3, "Lions", "Detroit", R.drawable.lions, 2.0f, "3131234567", false));
+        teams.add(new Team(4, "Bears", "Chicago", R.drawable.bears, 2.5f, "7739874356", false));*/
 
         Log.d(TAG, "onCreate: ");
 
         initListButton();
         initMapButton();
         initSettingsButton();
-        initAddTeam();
+        initAddTeamButton();
         initDeleteSwitch();
 
 
-       // ReadFromTextFile();
-       // ReadFromXMLFile();
-       // WriteToTextFile();
+        // ReadFromTextFile();
+        // ReadFromXMLFile();
+        // WriteToTextFile();
 
-       // for(Team team: teams)
-      //  {
-      //      SaveToDatabase(team);
-       // }
+        //for(Team team : teams)
+        //{
+        //    SaveToDatabase(team);
+        //}
 
-        this.setTitle("TeamList");
+        this.setTitle("Team List");
+
     }
 
     private void SaveToDatabase(Team team) {
-    TeamDataSource ds = new TeamDataSource(TeamListActivity.this);
+        TeamDataSource ds = new TeamDataSource(TeamListActivity.this);
 
-    try {
-        ds.open();
-        boolean result = ds.insert(team);
-        Log.d(TAG, "SaveToDatabase: Saved " + team);
-    }
-    catch (Exception e)
-    {
-        Log.d(TAG, "SaveToDatabase: " + e.getMessage());
-    }
-
+        try{
+            ds.open();
+            boolean result = ds.insert(team);
+            Log.d(TAG, "SaveToDatabase: Saved: " + team.toString());
+        }
+        catch(Exception ex)
+        {
+            Log.d(TAG, "SaveToDatabase: " + ex.getMessage());
+        }
     }
 
     private void initDeleteSwitch() {
@@ -82,18 +78,18 @@ public class TeamListActivity extends AppCompatActivity {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 Boolean status = compoundButton.isChecked();
-                //Communicate the status to the adapter
-                Log.d(TAG, "onCheckedChanged: Did we make it here for Delete");
+                // Communicate the status to the adapter
+                Log.d(TAG, "onCheckedChanged: Checked change event Switch: " + b);
                 teamAdapter.setDelete(status);
+
                 // rebind the recyclerview in the adapter
                 teamAdapter.notifyDataSetChanged();
-
             }
         });
 
     }
 
-    private void initAddTeam() {
+    private void initAddTeamButton() {
         Button btnAddTeam = findViewById(R.id.buttonAddTeam);
         btnAddTeam.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,66 +98,60 @@ public class TeamListActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-    }
-
-    private void WriteToTextFile() {
-        FileIO fileIO = new FileIO();
-        Integer counter = 0;
-        String[] data = new String [teams.size()];
-        for (Team t : teams) data[counter++] = t.toString();
-        fileIO.writeFile(this,data);
-    }
+    };
 
     private void initSettingsButton() {
-
         ImageButton ibList = findViewById(R.id.imageButtonSettings);
 
         ibList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Show the list activity
+                // Show the List Activity
                 Intent intent = new Intent(TeamListActivity.this, TeamSettingsActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
         });
-
     }
 
     private void initMapButton() {
-
         ImageButton ibList = findViewById(R.id.imageButtonMap);
 
         ibList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Show the list activity
+                // Show the List Activity
                 Intent intent = new Intent(TeamListActivity.this, TeamMapActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
         });
-
     }
 
-    private void ReadFromTextFile() {
-        //Write out the teams to a file
+    private void WriteToTextFile()
+    {
+        FileIO fileIO = new FileIO();
+        Integer counter = 0;
+        String[] data = new String[teams.size()];
+        for (Team t : teams) data[counter++] = t.toString();
+        fileIO.writeFile(this, data);
+    }
+
+
+
+    private void ReadFromTextFile()
+    {
+        //  Write out the data to a flat file.
         FileIO fileIO = new FileIO();
 
-        Integer counter = 0;
-        String[] data;// = new String [teams.size()];
-        //for(Team t : teams) data[counter++] = t.toString();
-
-        // fileIO.writeFile(this, data);
-
-
-        //Read the data out of the file
+        // Read the data out of the flat file.
         ArrayList<String> strData = fileIO.readFile(this);
         teams = new ArrayList<Team>();
 
         for(String s : strData)
         {
-            data = s.split("\\|");
+            // Remember to include \\
+            String[] data = s.split("\\|");
             teams.add(new Team(Integer.parseInt(data[0]),
                     data[1],
                     data[2],
@@ -172,38 +162,37 @@ public class TeamListActivity extends AppCompatActivity {
         }
     }
 
-/*    private void ReadFromXMLFile()
+    private void ReadFromXMLFile()
     {
         teams = new ArrayList<Team>();
 
         try {
             XmlPullParser xmlPullParser = getResources().getXml(R.xml.teams);
-            while (xmlPullParser.getEventType() != XmlPullParser.END_DOCUMENT)
+            while(xmlPullParser.getEventType() != XmlPullParser.END_DOCUMENT)
             {
                 if(xmlPullParser.getEventType() == XmlPullParser.START_TAG)
                 {
                     if(xmlPullParser.getName().equals("team"))
                     {
-                        int id = Integer.parseInt( xmlPullParser.getAttributeValue(null, "id"));
+                        int id = Integer.parseInt(xmlPullParser.getAttributeValue(null, "id"));
                         String description = xmlPullParser.getAttributeValue(null, "description");
                         String city = xmlPullParser.getAttributeValue(null, "city");
-                        int imgid = Integer.parseInt( xmlPullParser.getAttributeValue(null, "imgid"));
-
-                        Log.d(TAG, "ReadFromXMLFile: " + id + ":" + description + ":" + city + ":" + imgid);
-
+                        int imgid = Integer.parseInt(xmlPullParser.getAttributeValue(null, "imgid"));
+                        Log.d(TAG, "ReadFromXMLFile: " + id + ":" +
+                                description + ":" +
+                                city +":" +
+                                imgid);
                         teams.add(new Team(id, description, city, imgid, 0, "", false));
                     }
                 }
                 xmlPullParser.next();
             }
-
         }
-        catch (Exception e)
+        catch(Exception e)
         {
             Log.d(TAG, "ReadFromXMLFile: " + e.getMessage());
-
         }
-    }*/
+    }
 
     private void initListButton() {
         ImageButton ibList = findViewById(R.id.imageButtonList);
@@ -211,7 +200,7 @@ public class TeamListActivity extends AppCompatActivity {
         ibList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //Show the list activity
+                // Show the List Activity
                 Intent intent = new Intent(TeamListActivity.this, TeamListActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
@@ -219,7 +208,8 @@ public class TeamListActivity extends AppCompatActivity {
         });
     }
 
-    private final View.OnClickListener onItemClickListener = new View.OnClickListener() {
+
+    private View.OnClickListener onItemClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) view.getTag();
@@ -234,18 +224,19 @@ public class TeamListActivity extends AppCompatActivity {
     };
 
     @Override
-    public void onResume() {
+    public void onResume()
+    {
         super.onResume();
 
         TeamDataSource ds = new TeamDataSource(this);
         try {
             ds.open();
             teams = ds.getTeams();
-            Log.d(TAG, "onResume: Database is open");
+            Log.d(TAG, "onResume: Database is open.");
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Log.d(TAG, "onResume: Open DB error " + e.getMessage());
+            Log.d(TAG, "onResume: Open Error :" + ex.getMessage());
         }
 
         teamList = findViewById(R.id.rvTeams);
@@ -256,9 +247,9 @@ public class TeamListActivity extends AppCompatActivity {
         teamAdapter.setOnClickListener(onItemClickListener);
         teamList.setAdapter(teamAdapter);
 
-        for (Team t: teams)
+        for(Team t : teams)
         {
-            Log.d(TAG, "onResume: " + t.getName() + t.toString());
+            //Log.d(TAG, "onResume: " + t.toString());
         }
 
     }
