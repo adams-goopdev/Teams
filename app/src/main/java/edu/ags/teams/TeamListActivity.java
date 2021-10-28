@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -228,11 +229,23 @@ public class TeamListActivity extends AppCompatActivity {
     {
         super.onResume();
 
+        String sortField = getSharedPreferences("TeamsPreferences",
+                Context.MODE_PRIVATE).getString("sortField","name");
+        String sortOrder = getSharedPreferences("TeamsPreferences",
+                Context.MODE_PRIVATE).getString("sortOrder","ASC");
+
         TeamDataSource ds = new TeamDataSource(this);
         try {
             ds.open();
-            teams = ds.getTeams();
+            teams = ds.getTeams(sortField, sortOrder);
             Log.d(TAG, "onResume: Database is open.");
+
+            if(teams.size() == 0)
+            {
+                Log.d(TAG, "onResume: Refresh");
+                ds.RefreshData();
+            }
+            ds.close();
         }
         catch (Exception ex)
         {

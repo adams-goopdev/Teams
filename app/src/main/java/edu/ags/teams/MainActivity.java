@@ -1,12 +1,19 @@
 package edu.ags.teams;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
 import android.content.Intent;
 import android.media.Image;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
@@ -19,6 +26,8 @@ import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 
@@ -33,6 +42,7 @@ import edu.ags.teams.TeamSettingsActivity;
 
 public class MainActivity extends AppCompatActivity  implements  RaterDialog.SaveRatingListener{
     public static final String TAG = "myDebug";
+    private static final int PERMISSION_REQUEST_PHONE = 102;
     Team team;
 
     ArrayList<Team> teams;
@@ -50,6 +60,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         initToggleButton();
         initTextChangedEvents();
         initSaveButton();
+        initCallFunction();
 
         Bundle extras = getIntent().getExtras();
 
@@ -68,6 +79,60 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
 
         this.setTitle("MainActivity");
     }
+
+    private void initCallFunction() {
+        EditText editCell = findViewById(R.id.editCell);
+
+        editCell.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                checkPhonePermission(team.getCellNumber());
+                return false;
+            }
+        });
+
+    }
+
+    private void checkPhonePermission(String cellNumber) {
+        //Check the API version to decide if more permissions are necessary
+        if(Build.VERSION.SDK_INT >= 23)
+        {
+            //Check for the manifest permission
+            if(ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CALL_PHONE) != PERMISSION_GRANTED)
+            {
+                if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.CALL_PHONE)){
+                    Snackbar.make(findViewById(R.id.activity_main), "Teams requires this permission to place a call from the app.",
+                            Snackbar.LENGTH_INDEFINITE).setAction("OK", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, PERMISSION_REQUEST_PHONE);
+                        }
+                    }).show();
+                }
+                else
+                {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, PERMISSION_REQUEST_PHONE);
+                    callTeam(cellNumber);
+                }
+            }
+            else
+            {
+                //Permission was previously granted
+                callTeam(cellNumber);
+            }
+        }
+        else{
+            callTeam(cellNumber);
+        }
+
+    }
+
+    private void callTeam(String cellNumber) {
+        Intent intent = new Intent(Intent.ACTION_CALL);
+        intent.setData(Uri.parse("tel:" + cellNumber));
+        startActivity(intent);
+    }
+
     private void WriteToTextFile()
     {
         FileIO fileIO = new FileIO();
@@ -320,8 +385,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
 
     }

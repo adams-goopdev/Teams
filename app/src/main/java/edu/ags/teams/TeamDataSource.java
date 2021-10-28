@@ -28,7 +28,7 @@ public class TeamDataSource {
         if(refresh) RefreshData();
     }
 
-    private void RefreshData() {
+    public void RefreshData() {
         ArrayList<Team>  teams = new ArrayList<Team>();
         teams.add(new Team(1, "Packers", "Green Bay", R.drawable.packers, 4.0f, "9205697501", true));
         teams.add(new Team(2, "Vikings", "Minnesota", R.drawable.vikings, 3.0f, "8007453000", false));
@@ -181,4 +181,36 @@ public class TeamDataSource {
         return team;
     }
 
+    public ArrayList<Team> getTeams(String sortField, String sortOrder) {
+
+        ArrayList<Team> teams = new ArrayList<Team>();
+
+        try{
+            String query = "SELECT * FROM team ORDER BY " + sortField + " " + sortOrder;
+            Cursor cursor = database.rawQuery(query, null);
+
+            Team team;
+            cursor.moveToFirst();
+            while(!cursor.isAfterLast()){
+                team = new Team();
+                team.setId(cursor.getInt(0));
+                team.setName(cursor.getString(1));
+                team.setCity(cursor.getString(2));
+                team.setRating(cursor.getFloat(3));
+                team.setImgId(cursor.getInt(4));
+                team.setCellNumber(cursor.getString(5));
+                team.setFavorite(cursor.getString(6).equals("1"));
+                teams.add(team);
+                cursor.moveToNext();
+            }
+            cursor.close();
+        }
+        catch(Exception e)
+        {
+            Log.d(TAG, "getTeams: " + e.getMessage());
+        }
+        return teams;
+
+
+    }
 }

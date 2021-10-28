@@ -23,7 +23,38 @@ public class TeamSettingsActivity extends AppCompatActivity {
         initSettingsButton();
         initSortByClick();
         initSortOrderClick();
+        initSettings();
         this.setTitle("Settings");
+    }
+
+    private void initSettings() {
+        String sortField = getSharedPreferences("TeamsPreferences",
+                Context.MODE_PRIVATE).getString("sortField","name");
+        String sortOrder = getSharedPreferences("TeamsPreferences",
+                Context.MODE_PRIVATE).getString("sortOrder","ASC");
+
+        RadioButton rbName = findViewById(R.id.radioName);
+        RadioButton rbCity = findViewById(R.id.radioCity);
+        RadioButton rbRating = findViewById(R.id.radioRating);
+
+        if(sortField.equalsIgnoreCase("name"))
+            rbName.setChecked(true);
+        else if (sortField.equalsIgnoreCase("city"))
+            rbCity.setChecked(true);
+        else
+            rbRating.setChecked(true);
+
+        RadioButton rbAscending = findViewById(R.id.radioAscending);
+        RadioButton rbDescending = findViewById(R.id.radioDecending);
+
+        if(sortOrder.equalsIgnoreCase("ASC"))
+            rbAscending.setChecked(true);
+        else
+            rbDescending.setChecked(true);
+
+
+
+
     }
 
     private void initSortOrderClick() {
