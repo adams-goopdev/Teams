@@ -234,7 +234,8 @@ public class TeamListActivity extends AppCompatActivity {
         String sortOrder = getSharedPreferences("TeamsPreferences",
                 Context.MODE_PRIVATE).getString("sortOrder","ASC");
 
-        TeamDataSource ds = new TeamDataSource(this);
+        teams = new ArrayList<>();
+/*        TeamDataSource ds = new TeamDataSource(this);
         try {
             ds.open();
             teams = ds.getTeams(sortField, sortOrder);
@@ -250,8 +251,30 @@ public class TeamListActivity extends AppCompatActivity {
         catch (Exception ex)
         {
             Log.d(TAG, "onResume: Open Error :" + ex.getMessage());
+        }*/
+
+        try {
+            RestClient.executeGetRequest(MainActivity.VEHICLETRACKERAPI, this,
+                    new VolleyCallback() {
+                        @Override
+                        public void onSuccess(ArrayList<Team> result) {
+                            for(Team t : result)
+                            {
+                                Log.d(TAG, "onSuccess: " + t.getName());
+                            }
+                            teams = result;
+                            RebindTeams();
+                        }
+                    });
+        }
+        catch (Exception e)
+        {
+            Log.d(TAG, "onResume: "+ e.getMessage());
         }
 
+    }
+
+    private void RebindTeams(){
         teamList = findViewById(R.id.rvTeams);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         teamList.setLayoutManager(layoutManager);
@@ -259,11 +282,7 @@ public class TeamListActivity extends AppCompatActivity {
         teamAdapter = new TeamAdapter(teams, this);
         teamAdapter.setOnClickListener(onItemClickListener);
         teamList.setAdapter(teamAdapter);
-
-        for(Team t : teams)
-        {
-            //Log.d(TAG, "onResume: " + t.toString());
-        }
-
     }
+
+
 }

@@ -43,6 +43,7 @@ import edu.ags.teams.TeamSettingsActivity;
 public class MainActivity extends AppCompatActivity  implements  RaterDialog.SaveRatingListener{
     public static final String TAG = "myDebug";
     private static final int PERMISSION_REQUEST_PHONE = 102;
+    public static final String VEHICLETRACKERAPI = "https://vehicletrackerapi.azurewebsites.net/api/Team/";
     Team team;
 
     ArrayList<Team> teams;
