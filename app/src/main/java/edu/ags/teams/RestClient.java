@@ -55,9 +55,6 @@ public class RestClient {
                             {
                                 Log.d(TAG, "onResponse: "+ e.getMessage());
                             }
-
-
-
                         }
                     }, new Response.ErrorListener() {
                         @Override
@@ -73,6 +70,56 @@ public class RestClient {
         catch (Exception e)
         {
             Log.d(TAG, "executeGetRequest: " + e.getMessage());
+        }
+
+    }
+    public static void executeGetOneRequest(String url, Context context, VolleyCallback volleyCallback){
+
+        Log.d(TAG, "executeGetOneRequest: START");
+        RequestQueue queue = Volley.newRequestQueue(context);
+        ArrayList<Team> teams = new ArrayList<>();
+
+        try{
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            Log.d(TAG, "onResponse: " + response);
+
+                            //Process the JSON into an ArrayList<Team>
+                            try {
+
+                                JSONObject object = new JSONObject(response);
+                                Team team = new Team();
+                                team.setId(object.getInt("id"));
+                                team.setName(object.getString("name"));
+                                team.setCity(object.getString("city"));
+                                team.setRating((float) object.getDouble("rating"));
+                                team.setCellNumber(object.getString("cellNumber"));
+                                team.setFavorite(object.getBoolean("isFavorite"));
+                                teams.add(team);
+
+                                volleyCallback.onSuccess(teams);
+                            }
+                            catch (JSONException e)
+                            {
+                                Log.d(TAG, "onResponse: "+ e.getMessage());
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.d(TAG, "onErrorResponse: " + error.getMessage());
+                }
+            });
+
+            //THE MOST IMPORTANT LINE HERE.
+            queue.add(stringRequest);
+
+        }
+        catch (Exception e)
+        {
+            Log.d(TAG, "executeGetOneRequest: " + e.getMessage());
         }
 
     }

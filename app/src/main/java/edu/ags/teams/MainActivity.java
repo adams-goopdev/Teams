@@ -134,8 +134,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         startActivity(intent);
     }
 
-    private void WriteToTextFile()
-    {
+    private void WriteToTextFile() {
         FileIO fileIO = new FileIO();
         Integer counter = 0;
         String[] data = new String[teams.size()];
@@ -248,12 +247,32 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
 
     private void initTeam(int teamId) {
 
-        TeamDataSource ds = new TeamDataSource(this);
+/*        TeamDataSource ds = new TeamDataSource(this);
         ds.open();
 
         //team = teams.get(teamId-1);
         team = ds.getTeam(teamId);
-        ds.close();
+        ds.close();*/
+
+        try {
+            Log.d(TAG, "initTeam: "+ VEHICLETRACKERAPI + teamId);
+            RestClient.executeGetOneRequest(VEHICLETRACKERAPI + teamId, this,
+                    new VolleyCallback() {
+                        @Override
+                        public void onSuccess(ArrayList<Team> result) {
+                            team = result.get(0);
+                            RebindTeams();
+                        }
+                    });
+        }
+        catch (Exception e)
+        {
+            Log.d(TAG, "initTeam: " + e.getMessage());
+        }
+
+    }
+
+    private void RebindTeams() {
 
         EditText editName = findViewById(R.id.etName);
         EditText editCity = findViewById(R.id.etCity);
@@ -266,12 +285,10 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         editCellNumber.setText(team.getCellNumber());
         rating.setText(String.valueOf(team.getRating()));
         imageButtonPhoto.setImageResource(team.getImgId());
-
     }
 
 
-    private void ReadFromTextFile()
-    {
+    private void ReadFromTextFile() {
         //  Write out the data to a flat file.
         FileIO fileIO = new FileIO();
 
