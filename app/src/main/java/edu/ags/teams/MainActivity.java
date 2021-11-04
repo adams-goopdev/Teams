@@ -11,10 +11,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -44,6 +46,8 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
     public static final String TAG = "myDebug";
     private static final int PERMISSION_REQUEST_PHONE = 102;
     public static final String VEHICLETRACKERAPI = "https://vehicletrackerapi.azurewebsites.net/api/Team/";
+    private static final int PERMISSION_REQUEST_CAMERA = 103;
+    private static final int CAMERA_REQUEST = 1888;
     Team team;
 
     ArrayList<Team> teams;
@@ -62,6 +66,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         initTextChangedEvents();
         initSaveButton();
         initCallFunction();
+        initImageButton();
 
         Bundle extras = getIntent().getExtras();
 
@@ -79,6 +84,66 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         }
 
         this.setTitle("MainActivity");
+    }
+
+    private void initImageButton() {
+        ImageButton ib = findViewById(R.id.imgPhoto);
+        ib.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if(Build.VERSION.SDK_INT >= 23)
+                {
+                    //Check for the manifest permission
+                    if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PERMISSION_GRANTED)
+                    {
+                        if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.CAMERA)){
+                            Snackbar.make(findViewById(R.id.activity_main), "Teams requires this permission to place a take a picture from the app.",
+                                    Snackbar.LENGTH_INDEFINITE).setAction("OK", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
+                                }
+                            }).show();
+                        }
+                        else
+                        {
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
+                            takePhoto();
+                        }
+                    }
+                    else
+                    {
+                        //Permission was previously granted
+                        takePhoto();
+                    }
+                }
+                else{
+                    takePhoto();
+                }
+
+            }
+        });
+    }
+
+    private void takePhoto() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(cameraIntent, CAMERA_REQUEST);
+
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == CAMERA_REQUEST)
+            if(resultCode == RESULT_OK)
+            {
+                Bitmap photo = (Bitmap) data.getExtras().get("data");
+                Bitmap scaledPhoto = Bitmap.createScaledBitmap(photo, 144,144,true);
+                ImageButton imageButton = findViewById(R.id.imgPhoto);
+                imageButton.setImageBitmap(scaledPhoto);
+                team.setPhoto(scaledPhoto);
+
+            }
     }
 
     private void initCallFunction() {
@@ -148,12 +213,13 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
             @Override
             public void onClick(View view) {
 
-                TeamDataSource ds = new TeamDataSource(MainActivity.this);
+                //TeamDataSource ds = new TeamDataSource(MainActivity.this);
 
                 if(team.getId() == -1){
                     try{
-                        ds.open();
-                        boolean result = ds.insert(team);
+                        //ds.open();
+                        //boolean result = ds.insert(team);
+                        saveToAPI(true);
                         Log.d(TAG, "SaveToDatabase: Saved: " + team.toString());
                     }
                     catch(Exception ex)
@@ -164,8 +230,9 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                 }
                 else {
                     try{
-                        ds.open();
-                        boolean result = ds.update(team);
+                        //ds.open();
+                        //boolean result = ds.update(team);
+                        saveToAPI(false);
                         Log.d(TAG, "SaveToDatabase: Saved: " + team.toString());
                     }
                     catch(Exception ex)
@@ -173,7 +240,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                         Log.d(TAG, "SaveToDatabase: " + ex.getMessage());
                     }
                     Log.d(TAG, "onClick: Update Team: " + team.toString());
-                    teams.set(team.getId() - 1, team);
+                   // teams.set(team.getId() - 1, team);
                 }
 
 
@@ -186,6 +253,42 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                 startActivity(intent);
             }
         });
+    }
+
+    private void saveToAPI(boolean post) {
+
+        try {
+            if(post)
+            {
+                RestClient.executePostRequest(team,
+                        MainActivity.VEHICLETRACKERAPI,
+                        this,
+                        new VolleyCallback() {
+                            @Override
+                            public void onSuccess(ArrayList<Team> result) {
+                                Log.d(TAG, "onSuccess: Post" + result);
+                            }
+                        });
+            }
+            else
+            {
+                RestClient.executePutRequest(team,
+                        MainActivity.VEHICLETRACKERAPI + team.getId(),
+                        this,
+                        new VolleyCallback() {
+                            @Override
+                            public void onSuccess(ArrayList<Team> result) {
+                                Log.d(TAG, "onSuccess: Put" + result);
+                            }
+                        });
+            }
+        }
+        catch (Exception e)
+        {
+            Log.d(TAG, "saveToAPI: " + e.getMessage());
+        }
+
+
     }
 
     private void initTextChangedEvents() {
@@ -284,7 +387,8 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         editCity.setText(team.getCity());
         editCellNumber.setText(team.getCellNumber());
         rating.setText(String.valueOf(team.getRating()));
-        imageButtonPhoto.setImageResource(team.getImgId());
+       // imageButtonPhoto.setImageResource(team.getImgId());
+        imageButtonPhoto.setImageBitmap(team.getPhoto());
     }
 
 

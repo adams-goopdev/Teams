@@ -29,7 +29,7 @@ public class TeamAdapter extends RecyclerView.Adapter {
         isDeleting = status;
     }
 
-    public class TeamViewHolder extends RecyclerView.ViewHolder{
+    public class TeamViewHolder extends RecyclerView.ViewHolder {
 
         private TextView textViewDescription;
         private TextView textViewCity;
@@ -49,30 +49,44 @@ public class TeamAdapter extends RecyclerView.Adapter {
             itemView.setOnClickListener(onClickListener);
         }
 
-        public TextView getTextViewDescription() { return textViewDescription; }
-        public TextView getTextViewCity() {return textViewCity;}
-        public ImageButton getImageButtonPhoto() {return imageButtonPhoto;}
-        public CheckBox getChkFavorite() {return chkFavorite;}
-        public Button getBtnDelete() {return btnDelete;}
+        public TextView getTextViewDescription() {
+            return textViewDescription;
+        }
+
+        public TextView getTextViewCity() {
+            return textViewCity;
+        }
+
+        public ImageButton getImageButtonPhoto() {
+            return imageButtonPhoto;
+        }
+
+        public CheckBox getChkFavorite() {
+            return chkFavorite;
+        }
+
+        public Button getBtnDelete() {
+            return btnDelete;
+        }
     }
 
-    public TeamAdapter(ArrayList<Team> arrayList, Context context){
+    public TeamAdapter(ArrayList<Team> arrayList, Context context) {
         teamData = arrayList;
         parentContext = context;
         //Log.d(TAG, "TeamAdapter: " + arrayList.size());
     }
 
-    public void setOnClickListener(View.OnClickListener itemClickListener)
-    {
+    public void setOnClickListener(View.OnClickListener itemClickListener) {
         //Log.d(TAG, "setOnClickListener: ");
         onClickListener = itemClickListener;
     }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         // retrieve and inflate the list_item.xml
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false );
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
         return new TeamViewHolder(view);
     }
 
@@ -85,12 +99,17 @@ public class TeamAdapter extends RecyclerView.Adapter {
         // Bind to the screen
         teamViewHolder.getTextViewDescription().setText(team.getName());
         teamViewHolder.getTextViewCity().setText(team.getCity());
-        teamViewHolder.getImageButtonPhoto().setImageResource(team.getImgId());
+        //teamViewHolder.getImageButtonPhoto().setImageResource(team.getImgId());
         teamViewHolder.getChkFavorite().setChecked(team.getFavorite());
+
+        if (team.getPhoto() != null) {
+            //Bind the photo
+            teamViewHolder.getImageButtonPhoto().setImageBitmap(team.getPhoto());
+        }
 
         //Log.d(TAG, "onBindViewHolder: " + team);
 
-        if(isDeleting) {
+        if (isDeleting) {
             //Log.d(TAG, "onBindViewHolder: Deleting: " + isDeleting);
             teamViewHolder.getBtnDelete().setVisibility(View.VISIBLE);
             teamViewHolder.getBtnDelete().setOnClickListener(new View.OnClickListener() {
@@ -100,9 +119,7 @@ public class TeamAdapter extends RecyclerView.Adapter {
                     deleteItem(position, team.getId());
                 }
             });
-        }
-        else
-        {
+        } else {
             //Log.d(TAG, "onBindViewHolder: Not Deleting: " + isDeleting);
             teamViewHolder.getBtnDelete().setVisibility(View.INVISIBLE);
         }
@@ -119,34 +136,46 @@ public class TeamAdapter extends RecyclerView.Adapter {
 
     private void deleteItem(int position, int id) {
         // Remove it from the teamData
-        teamData.remove(position);
+
 
         // Write the file.
         // WriteToTextFile();
 
-        TeamDataSource ds = new TeamDataSource(parentContext);
-        try{
-            ds.open();
-            boolean result = ds.delete(id);
+        // TeamDataSource ds = new TeamDataSource(parentContext);
+        try {
+            // ds.open();
+            //boolean result = ds.delete(id);
+
+            RestClient.executeDeleteRequest(teamData.get(position),
+                    MainActivity.VEHICLETRACKERAPI + id,
+                    this.parentContext,
+                    new VolleyCallback() {
+                        @Override
+                        public void onSuccess(ArrayList<Team> result) {
+                            notifyDataSetChanged();
+                            Log.d(TAG, "onSuccess: Delete");
+                        }
+                    });
             Log.d(TAG, "deleteItem: Delete Team: " + id);
-        }
-        catch(Exception ex)
-        {
+
+            //Remove it from Teamdata
+            teamData.remove(position);
+
+
+        } catch (Exception ex) {
             Log.d(TAG, "deleteItem: " + ex.getMessage());
         }
         // Rebind
         notifyDataSetChanged();
     }
 
-    private void WriteToTextFile()
-    {
+    private void WriteToTextFile() {
         FileIO fileIO = new FileIO();
         Integer counter = 0;
         String[] data = new String[teamData.size()];
         for (Team t : teamData) data[counter++] = t.toString();
         fileIO.writeFile((AppCompatActivity) parentContext, data);
     }
-
 
 
     @Override

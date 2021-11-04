@@ -1,5 +1,7 @@
 package edu.ags.teams;
 
+import android.graphics.Bitmap;
+
 public class Team {
     public void setId(int id) {
         Id = id;
@@ -8,6 +10,16 @@ public class Team {
     private int Id;
     private String Name;
     private String City;
+
+    public Bitmap getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(Bitmap photo) {
+        this.photo = photo;
+    }
+
+    private Bitmap photo;
 
     public int getImgId() {
         return ImgId;
@@ -31,8 +43,7 @@ public class Team {
 
     private Boolean isFavorite;
 
-    public Team()
-    {
+    public Team() {
         Id = -1;
         ImgId = R.drawable.noimage;
         isFavorite = false;
@@ -79,8 +90,7 @@ public class Team {
         Rating = rating;
     }
 
-    public Team(int id, String name, String city, int imgId, float rating, String cellNumber, Boolean isfavorite)
-    {
+    public Team(int id, String name, String city, int imgId, float rating, String cellNumber, Boolean isfavorite) {
         // Initialize fields when instantiating the object
         Id = id;
         Name = name;
@@ -91,8 +101,7 @@ public class Team {
         isFavorite = isfavorite;
     }
 
-    public String toString()
-    {
+    public String toString() {
         return Id + "|" + Name + "|" + City + "|" + ImgId + "|" + Rating + "|" + CellNumber + "|" + isFavorite;
     }
 }
