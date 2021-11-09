@@ -10,6 +10,8 @@ public class Team {
     private int Id;
     private String Name;
     private String City;
+    private Double Latitude;
+    private Double Longitude;
 
     public Bitmap getPhoto() {
         return photo;
@@ -103,5 +105,21 @@ public class Team {
 
     public String toString() {
         return Id + "|" + Name + "|" + City + "|" + ImgId + "|" + Rating + "|" + CellNumber + "|" + isFavorite;
+    }
+
+    public void setLatitude(Double latitude) {
+        Latitude = latitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        Longitude = longitude;
+    }
+
+    public Double getLongitude() {
+        return  Longitude;
+    }
+
+    public Double getLatitude() {
+        return Latitude;
     }
 }

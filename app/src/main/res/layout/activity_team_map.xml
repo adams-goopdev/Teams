@@ -6,6 +6,139 @@
     android:layout_height="match_parent"
     tools:context=".TeamMapActivity">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:id="@+id/textView_name"
+        android:layout_marginTop="16dp"
+        android:textSize="25dp"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_lookup"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="24dp"
+        android:text="lookup"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_fromlocation"
+        android:layout_marginEnd="28dp"
+        android:layout_marginTop="24dp"
+        android:text="FromLocation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <EditText
+        android:id="@+id/editText_streetAddress"
+        android:layout_width="344dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:inputType="textPostalAddress"
+        android:hint="street address"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_lookup"/>
+
+    <EditText
+        android:id="@+id/editText_city"
+        android:layout_width="34dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="8dp"
+        android:inputType="textPersonName"
+        android:hint="city"
+        app:layout_constraintStart_toStartOf="@id/editText_streetAddress"
+        app:layout_constraintTop_toBottomOf="@id/editText_streetAddress"/>
+
+
+    <EditText
+        android:id="@+id/editText_state"
+        android:layout_width="41dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="8dp"
+        android:inputType="textPersonName"
+        android:hint="State"
+        app:layout_constraintStart_toEndOf="@id/editText_city"
+        app:layout_constraintBaseline_toBaselineOf="@id/editText_city"
+        app:layout_constraintTop_toBottomOf="@id/editText_city"/>
+
+    <EditText
+        android:id="@+id/editText_zip"
+        android:layout_width="71dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="8dp"
+        android:inputType="number"
+        android:hint="Zip"
+        app:layout_constraintStart_toEndOf="@id/editText_state"
+        app:layout_constraintBaseline_toBaselineOf="@id/editText_state"
+        app:layout_constraintTop_toBottomOf="@id/editText_state"/>
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_find"
+        android:text="find"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editText_zip"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/button_save"
+        android:text="save"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/button_find"/>
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textview_latitude"
+        android:text="latitude"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/black"
+        android:textSize="25dp"
+        app:layout_constraintTop_toBottomOf="@id/button_save"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textview_longitude"
+        android:text="longitude"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/black"
+        android:textSize="25dp"
+        app:layout_constraintTop_toBottomOf="@id/textview_latitude"/>
+
+<!--    <fragment
+        android:layout_width="0dp"
+        android:layout_height="250dp"
+        android:id="@+id/map"
+        class='com.google.android.gms.maps.SupportMapFragment'
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginTop="5dp"
+        app:layout_constraintBottom_toTopOf="@id/navbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>-->
+
+
+
     <LinearLayout
         android:id="@+id/navbar"
         android:layout_width="395dp"

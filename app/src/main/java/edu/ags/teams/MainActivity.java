@@ -485,8 +485,12 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
             @Override
             public void onClick(View view) {
                 // Show the List Activity
+
+
+
                 Intent intent = new Intent(MainActivity.this, TeamMapActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra("teamId",team.getId());
                 startActivity(intent);
             }
         });
