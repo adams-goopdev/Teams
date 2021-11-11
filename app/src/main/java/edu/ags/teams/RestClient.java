@@ -54,10 +54,12 @@ public class RestClient {
                                     team.setRating((float) object.getDouble("rating"));
                                     team.setCellNumber(object.getString("cellNumber"));
                                     team.setFavorite(object.getBoolean("isFavorite"));
+                                    team.setLatitude(object.getDouble("latitude"));
+                                    team.setLongitude(object.getDouble("longitude"));
 
                                     //Get and process the photo
                                     String jsonPhoto = object.getString("photo");
-                                    if (jsonPhoto != null) {
+                                    if (jsonPhoto != "null" && !jsonPhoto.equals(null)) {
                                         Log.d(TAG, "onResponse: " + jsonPhoto);
                                         byte[] bytePhoto = null;
                                         bytePhoto = Base64.decode(jsonPhoto, Base64.DEFAULT);
@@ -114,6 +116,21 @@ public class RestClient {
                                 team.setRating((float) object.getDouble("rating"));
                                 team.setCellNumber(object.getString("cellNumber"));
                                 team.setFavorite(object.getBoolean("isFavorite"));
+                                team.setLatitude(object.getDouble("latitude"));
+                                team.setLongitude(object.getDouble("longitude"));
+
+
+
+                                //Get and process the photo
+                                String jsonPhoto = object.getString("photo");
+                                if (jsonPhoto != "null" && !jsonPhoto.equals(null)) {
+                                    Log.d(TAG, "onResponse: " + jsonPhoto);
+                                    byte[] bytePhoto = null;
+                                    bytePhoto = Base64.decode(jsonPhoto, Base64.DEFAULT);
+                                    Bitmap bmp = BitmapFactory.decodeByteArray(bytePhoto, 0, bytePhoto.length);
+                                    team.setPhoto(bmp);
+                                }
+
                                 teams.add(team);
 
                                 volleyCallback.onSuccess(teams);
@@ -180,7 +197,9 @@ public class RestClient {
             jsonObject.put("rating", team.getRating());
             jsonObject.put("cellNumber", team.getCellNumber());
             jsonObject.put("isFavorite", team.getFavorite());
-            jsonObject.put("photo", null);
+            jsonObject.put("latitude", team.getLatitude());
+            jsonObject.put("longitude", team.getLongitude());
+
 
             //Process the photo
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -29,6 +31,17 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
@@ -42,15 +55,21 @@ import edu.ags.teams.TeamListActivity;
 import edu.ags.teams.TeamMapActivity;
 import edu.ags.teams.TeamSettingsActivity;
 
-public class MainActivity extends AppCompatActivity  implements  RaterDialog.SaveRatingListener{
+public class MainActivity extends AppCompatActivity  implements  RaterDialog.SaveRatingListener, OnMapReadyCallback {
     public static final String TAG = "myDebug";
     private static final int PERMISSION_REQUEST_PHONE = 102;
     public static final String VEHICLETRACKERAPI = "https://vehicletrackerapi.azurewebsites.net/api/Team/";
     private static final int PERMISSION_REQUEST_CAMERA = 103;
     private static final int CAMERA_REQUEST = 1888;
     Team team;
-
     ArrayList<Team> teams;
+
+    GoogleMap gMap;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    LocationRequest locationRequest;
+    LocationCallback locationCallback;
+    SupportMapFragment mapFragment;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +87,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         initCallFunction();
         initImageButton();
 
+
         Bundle extras = getIntent().getExtras();
 
         //ReadFromTextFile();
@@ -83,8 +103,14 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
             Log.d(TAG, "onCreate: New Team");
         }
 
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
         this.setTitle("MainActivity");
     }
+
+
 
     private void initImageButton() {
         ImageButton ib = findViewById(R.id.imgPhoto);
@@ -350,12 +376,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
 
     private void initTeam(int teamId) {
 
-/*        TeamDataSource ds = new TeamDataSource(this);
-        ds.open();
 
-        //team = teams.get(teamId-1);
-        team = ds.getTeam(teamId);
-        ds.close();*/
 
         try {
             Log.d(TAG, "initTeam: "+ VEHICLETRACKERAPI + teamId);
@@ -365,6 +386,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                         public void onSuccess(ArrayList<Team> result) {
                             team = result.get(0);
                             RebindTeams();
+
                         }
                     });
         }
@@ -387,8 +409,10 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         editCity.setText(team.getCity());
         editCellNumber.setText(team.getCellNumber());
         rating.setText(String.valueOf(team.getRating()));
-       // imageButtonPhoto.setImageResource(team.getImgId());
         imageButtonPhoto.setImageBitmap(team.getPhoto());
+
+        mapFragment.getMapAsync(this);
+
     }
 
 
@@ -521,5 +545,50 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         TextView txtRating = findViewById(R.id.txtRating);
         txtRating.setText(String.valueOf(rating));
         team.setRating(rating);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        try {
+            Log.d(TAG, "onMapReady: Start of Map");
+
+            gMap = googleMap;
+            gMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+
+            Point size = new Point();
+            WindowManager windowManager = getWindowManager();
+            windowManager.getDefaultDisplay().getSize(size);
+            int measuredWidth = size.x;
+            int measuredHeight = size.y;
+
+
+            if(team != null)
+            {
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+                String info = team.getName() + ", " +
+                        team.getCity() + ": " +
+                        team.getRating();
+                Log.d(TAG, "onMapReady: " + info);
+
+                LatLng point = new LatLng(team.getLatitude(), team.getLongitude());
+                builder.include(point);
+
+                gMap.addMarker(new MarkerOptions().position(point)
+                        .title(team.getName())
+                        .snippet(team.getCity() + ": " + team.getRating()));
+
+                gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point,15f));
+            }
+            else
+            {
+                Log.d(TAG, "onMapReady: Team is null");
+            }
+
+        }
+        catch (Exception e)
+        {
+            Log.d(TAG, "onMapReady: " + e.getMessage());
+        }
     }
 }
