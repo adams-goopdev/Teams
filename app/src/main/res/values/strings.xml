@@ -29,4 +29,7 @@
     <string name="street_address">street address</string>
     <string name="from_my_location">From Location</string>
     <string name="look_up">Look up</string>
+    <string name="north">North</string>
+    <string name="normal">normal</string>
+    <string name="satellite">satellite</string>
 </resources>

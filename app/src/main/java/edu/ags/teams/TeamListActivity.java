@@ -14,6 +14,9 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.Switch;
 
+import com.microsoft.signalr.HubConnection;
+import com.microsoft.signalr.HubConnectionBuilder;
+
 import org.xmlpull.v1.XmlPullParser;
 
 import java.util.ArrayList;
@@ -43,6 +46,7 @@ public class TeamListActivity extends AppCompatActivity {
         initSettingsButton();
         initAddTeamButton();
         initDeleteSwitch();
+        initSignalR();
 
 
         // ReadFromTextFile();
@@ -56,6 +60,33 @@ public class TeamListActivity extends AppCompatActivity {
 
         this.setTitle("Team List");
 
+    }
+
+    private void initSignalR() {
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("https://vehicletrackerapi.azurewebsites.net/VehicleHub")
+                .build();
+
+        Log.d(TAG, "initSignalR: Starting the hub connection...");
+        hubConnection.start().blockingAwait();
+        hubConnection.invoke(Void.class, "GetConnectionId");
+
+        Log.d(TAG, "initSignalR: Started the hub connection...");
+
+        //Create a callback method to receive messages. 
+        hubConnection.on("ReceiveMessage", (user, message) -> {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "run: New Message : " + user + ":" + message);
+                }
+            });
+        }, String.class, String.class);
+        
+        //Send the message
+        hubConnection.send("SendMessage","AdamS Teams App", "Hello from Android");
+
+        Log.d(TAG, "initSignalR: sent the message");
     }
 
     private void SaveToDatabase(Team team) {

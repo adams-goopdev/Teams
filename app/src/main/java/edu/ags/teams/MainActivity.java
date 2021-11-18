@@ -10,9 +10,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
@@ -27,6 +32,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -55,7 +62,7 @@ import edu.ags.teams.TeamListActivity;
 import edu.ags.teams.TeamMapActivity;
 import edu.ags.teams.TeamSettingsActivity;
 
-public class MainActivity extends AppCompatActivity  implements  RaterDialog.SaveRatingListener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements RaterDialog.SaveRatingListener, OnMapReadyCallback {
     public static final String TAG = "myDebug";
     private static final int PERMISSION_REQUEST_PHONE = 102;
     public static final String VEHICLETRACKERAPI = "https://vehicletrackerapi.azurewebsites.net/api/Team/";
@@ -69,6 +76,11 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
     LocationRequest locationRequest;
     LocationCallback locationCallback;
     SupportMapFragment mapFragment;
+
+    SensorManager sensorManager;
+    Sensor accelerometer;
+    Sensor magnetometer;
+    TextView textViewDirection;
 
 
     @Override
@@ -86,18 +98,20 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         initSaveButton();
         initCallFunction();
         initImageButton();
+        initMapTypeButtons();
+        initDirectionControls();
 
+        textViewDirection = findViewById(R.id.textViewHeading);
 
         Bundle extras = getIntent().getExtras();
 
         //ReadFromTextFile();
 
-        if(extras != null) {
+        if (extras != null) {
             // Edit an existing team
             Log.d(TAG, "onCreate: " + extras.getInt("teamId"));
             initTeam(extras.getInt("teamId"));
-        }
-        else {
+        } else {
             // Make a new one.
             team = new Team();
             Log.d(TAG, "onCreate: New Team");
@@ -110,6 +124,80 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         this.setTitle("MainActivity");
     }
 
+    private void initDirectionControls() {
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
+        if (accelerometer != null && magnetometer != null) {
+
+            sensorManager.registerListener(mySensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+            sensorManager.registerListener(mySensorEventListener, magnetometer, SensorManager.SENSOR_DELAY_FASTEST);
+        } else {
+            Log.d(TAG, "initDirectionControls: Sensor not found");
+        }
+    }
+
+    private SensorEventListener mySensorEventListener = new SensorEventListener() {
+
+        float[] accelerometerValues;
+        float[] magneticValues;
+
+        @Override
+        public void onSensorChanged(SensorEvent sensorEvent) {
+            if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+                accelerometerValues = sensorEvent.values;
+            if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
+                magneticValues = sensorEvent.values;
+
+            if (accelerometerValues != null && magneticValues != null) {
+                float R[] = new float[9];
+                float I[] = new float[9];
+
+                boolean success = SensorManager.getRotationMatrix(R, I, accelerometerValues, magneticValues);
+
+                if (success) {
+                    float orientation[] = new float[3];
+                    SensorManager.getOrientation(R, orientation);
+                    float azimuth = (float) Math.toDegrees(orientation[0]);
+
+                    if (azimuth < 0.0f) {
+                        azimuth += 360.0f;
+                    }
+                    String direction;
+
+                    if (azimuth >= 315 || azimuth < 45) { direction = "N"; }
+                    else if (azimuth >= 225 && azimuth < 315) { direction = "W"; }
+                    else if (azimuth >= 135 && azimuth < 225) { direction = "S"; }
+                    else { direction = "E";}
+
+
+                    textViewDirection.setText(direction);
+
+                }
+            }
+        }
+
+        @Override
+        public void onAccuracyChanged(Sensor sensor, int i) {
+
+        }
+    };
+
+    private void initMapTypeButtons() {
+        RadioGroup rgMapType = findViewById(R.id.radioGroupMapType);
+        rgMapType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                RadioButton rbNormal = findViewById(R.id.radioButtonNormal);
+                if (rbNormal.isChecked()) {
+                    gMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+                } else {
+                    gMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
+                }
+            }
+        });
+    }
 
 
     private void initImageButton() {
@@ -118,12 +206,10 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
             @Override
             public void onClick(View view) {
 
-                if(Build.VERSION.SDK_INT >= 23)
-                {
+                if (Build.VERSION.SDK_INT >= 23) {
                     //Check for the manifest permission
-                    if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PERMISSION_GRANTED)
-                    {
-                        if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.CAMERA)){
+                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PERMISSION_GRANTED) {
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.CAMERA)) {
                             Snackbar.make(findViewById(R.id.activity_main), "Teams requires this permission to place a take a picture from the app.",
                                     Snackbar.LENGTH_INDEFINITE).setAction("OK", new View.OnClickListener() {
                                 @Override
@@ -131,20 +217,15 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
                                 }
                             }).show();
-                        }
-                        else
-                        {
+                        } else {
                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CAMERA}, PERMISSION_REQUEST_CAMERA);
                             takePhoto();
                         }
-                    }
-                    else
-                    {
+                    } else {
                         //Permission was previously granted
                         takePhoto();
                     }
-                }
-                else{
+                } else {
                     takePhoto();
                 }
 
@@ -158,13 +239,12 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
 
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == CAMERA_REQUEST)
-            if(resultCode == RESULT_OK)
-            {
+        if (requestCode == CAMERA_REQUEST)
+            if (resultCode == RESULT_OK) {
                 Bitmap photo = (Bitmap) data.getExtras().get("data");
-                Bitmap scaledPhoto = Bitmap.createScaledBitmap(photo, 144,144,true);
+                Bitmap scaledPhoto = Bitmap.createScaledBitmap(photo, 144, 144, true);
                 ImageButton imageButton = findViewById(R.id.imgPhoto);
                 imageButton.setImageBitmap(scaledPhoto);
                 team.setPhoto(scaledPhoto);
@@ -187,12 +267,10 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
 
     private void checkPhonePermission(String cellNumber) {
         //Check the API version to decide if more permissions are necessary
-        if(Build.VERSION.SDK_INT >= 23)
-        {
+        if (Build.VERSION.SDK_INT >= 23) {
             //Check for the manifest permission
-            if(ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CALL_PHONE) != PERMISSION_GRANTED)
-            {
-                if(ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.CALL_PHONE)){
+            if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CALL_PHONE) != PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this, Manifest.permission.CALL_PHONE)) {
                     Snackbar.make(findViewById(R.id.activity_main), "Teams requires this permission to place a call from the app.",
                             Snackbar.LENGTH_INDEFINITE).setAction("OK", new View.OnClickListener() {
                         @Override
@@ -200,20 +278,15 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, PERMISSION_REQUEST_PHONE);
                         }
                     }).show();
-                }
-                else
-                {
+                } else {
                     ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.CALL_PHONE}, PERMISSION_REQUEST_PHONE);
                     callTeam(cellNumber);
                 }
-            }
-            else
-            {
+            } else {
                 //Permission was previously granted
                 callTeam(cellNumber);
             }
-        }
-        else{
+        } else {
             callTeam(cellNumber);
         }
 
@@ -241,32 +314,27 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
 
                 //TeamDataSource ds = new TeamDataSource(MainActivity.this);
 
-                if(team.getId() == -1){
-                    try{
+                if (team.getId() == -1) {
+                    try {
                         //ds.open();
                         //boolean result = ds.insert(team);
                         saveToAPI(true);
                         Log.d(TAG, "SaveToDatabase: Saved: " + team.toString());
-                    }
-                    catch(Exception ex)
-                    {
+                    } catch (Exception ex) {
                         Log.d(TAG, "SaveToDatabase: " + ex.getMessage());
                     }
 
-                }
-                else {
-                    try{
+                } else {
+                    try {
                         //ds.open();
                         //boolean result = ds.update(team);
                         saveToAPI(false);
                         Log.d(TAG, "SaveToDatabase: Saved: " + team.toString());
-                    }
-                    catch(Exception ex)
-                    {
+                    } catch (Exception ex) {
                         Log.d(TAG, "SaveToDatabase: " + ex.getMessage());
                     }
                     Log.d(TAG, "onClick: Update Team: " + team.toString());
-                   // teams.set(team.getId() - 1, team);
+                    // teams.set(team.getId() - 1, team);
                 }
 
 
@@ -284,8 +352,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
     private void saveToAPI(boolean post) {
 
         try {
-            if(post)
-            {
+            if (post) {
                 RestClient.executePostRequest(team,
                         MainActivity.VEHICLETRACKERAPI,
                         this,
@@ -295,9 +362,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                                 Log.d(TAG, "onSuccess: Post" + result);
                             }
                         });
-            }
-            else
-            {
+            } else {
                 RestClient.executePutRequest(team,
                         MainActivity.VEHICLETRACKERAPI + team.getId(),
                         this,
@@ -308,9 +373,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                             }
                         });
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.d(TAG, "saveToAPI: " + e.getMessage());
         }
 
@@ -377,9 +440,8 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
     private void initTeam(int teamId) {
 
 
-
         try {
-            Log.d(TAG, "initTeam: "+ VEHICLETRACKERAPI + teamId);
+            Log.d(TAG, "initTeam: " + VEHICLETRACKERAPI + teamId);
             RestClient.executeGetOneRequest(VEHICLETRACKERAPI + teamId, this,
                     new VolleyCallback() {
                         @Override
@@ -389,9 +451,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
 
                         }
                     });
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.d(TAG, "initTeam: " + e.getMessage());
         }
 
@@ -424,8 +484,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         ArrayList<String> strData = fileIO.readFile(this);
         teams = new ArrayList<Team>();
 
-        for(String s : strData)
-        {
+        for (String s : strData) {
             // Remember to include \\
             String[] data = s.split("\\|");
             teams.add(new Team(Integer.parseInt(data[0]),
@@ -461,12 +520,10 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
         btnRating.setEnabled(enabled);
         editCell.setEnabled(enabled);
 
-        if(enabled) {
+        if (enabled) {
             etName.requestFocus();
             editCell.setInputType(InputType.TYPE_CLASS_PHONE);
-        }
-        else
-        {
+        } else {
             ScrollView scrollView = findViewById(R.id.scrollView);
             scrollView.fullScroll(ScrollView.FOCUS_UP);
             editCell.setInputType(InputType.TYPE_NULL);
@@ -511,10 +568,9 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                 // Show the List Activity
 
 
-
                 Intent intent = new Intent(MainActivity.this, TeamMapActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                intent.putExtra("teamId",team.getId());
+                intent.putExtra("teamId", team.getId());
                 startActivity(intent);
             }
         });
@@ -562,8 +618,7 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
             int measuredHeight = size.y;
 
 
-            if(team != null)
-            {
+            if (team != null) {
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
 
                 String info = team.getName() + ", " +
@@ -578,16 +633,12 @@ public class MainActivity extends AppCompatActivity  implements  RaterDialog.Sav
                         .title(team.getName())
                         .snippet(team.getCity() + ": " + team.getRating()));
 
-                gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point,15f));
-            }
-            else
-            {
+                gMap.animateCamera(CameraUpdateFactory.newLatLngZoom(point, 15f));
+            } else {
                 Log.d(TAG, "onMapReady: Team is null");
             }
 
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             Log.d(TAG, "onMapReady: " + e.getMessage());
         }
     }
