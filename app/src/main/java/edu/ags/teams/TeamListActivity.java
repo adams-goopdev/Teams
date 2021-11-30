@@ -33,7 +33,13 @@ public class TeamListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_team_list);
 
-        teams = new ArrayList<Team>();
+        //Retrieve the InternetCheck Boolean
+        new InternetCheck(i -> {
+            Log.d(TAG, "onCreate: InternetCheck: " + String.valueOf(i)  );
+        });
+
+
+        //teams = new ArrayList<Team>();
         /*teams.add(new Team(1, "Packers", "Green Bay", R.drawable.packers, 4.0f, "9205697501", true));
         teams.add(new Team(2, "Vikings", "Minnesota", R.drawable.vikings, 3.0f, "8007453000", false));
         teams.add(new Team(3, "Lions", "Detroit", R.drawable.lions, 2.0f, "3131234567", false));
@@ -46,7 +52,7 @@ public class TeamListActivity extends AppCompatActivity {
         initSettingsButton();
         initAddTeamButton();
         initDeleteSwitch();
-        initSignalR();
+        //initSignalR();
 
 
         // ReadFromTextFile();
