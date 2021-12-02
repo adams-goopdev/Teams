@@ -15,14 +15,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Teams">
         <activity
-            android:name=".Graphics"
+            android:name=".Game"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
         </activity>
+        <activity
+            android:name=".Graphics"
+            android:exported="true"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true" />
@@ -35,16 +40,12 @@
         <activity
             android:name=".TeamListActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyBK89O9XY_yhWyMReNhm8xb5Pog-1GzQmw"></meta-data>
+            android:value="AIzaSyBK89O9XY_yhWyMReNhm8xb5Pog-1GzQmw" />
     </application>
 
 </manifest>
